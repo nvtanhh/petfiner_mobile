@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:pet_finder/data.dart';
-import 'package:pet_finder/pet_detail.dart';
+import 'package:pet_finder/ui/pet_detail.dart';
 
 class PetWidget extends StatelessWidget {
   final Pet pet;
   final int index;
 
-  PetWidget({@required this.pet, @required this.index});
+  final bool showAsColumn;
+
+  PetWidget(
+      {@required this.pet, @required this.index, this.showAsColumn = false});
 
   @override
   Widget build(BuildContext context) {
@@ -30,8 +33,8 @@ class PetWidget extends StatelessWidget {
           ),
         ),
         margin: EdgeInsets.only(
-            right: index != null ? 16 : 0,
-            left: index == 0 ? 16 : 0,
+            right: !showAsColumn && index != null ? 16 : 0,
+            left: !showAsColumn && index == 0 ? 16 : 0,
             bottom: 16),
         width: 220,
         child: Column(
@@ -59,17 +62,22 @@ class PetWidget extends StatelessWidget {
                     alignment: Alignment.topRight,
                     child: Padding(
                       padding: EdgeInsets.all(12),
-                      child: Container(
-                        height: 30,
-                        width: 30,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: pet.favorite ? Colors.red[400] : Colors.white,
-                        ),
-                        child: Icon(
-                          Icons.favorite,
-                          size: 16,
-                          color: pet.favorite ? Colors.white : Colors.grey[300],
+                      child: GestureDetector(
+                        onTap: () {},
+                        child: Container(
+                          height: 30,
+                          width: 30,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color:
+                                pet.favorite ? Colors.red[400] : Colors.white,
+                          ),
+                          child: Icon(
+                            Icons.favorite,
+                            size: 16,
+                            color:
+                                pet.favorite ? Colors.white : Colors.grey[300],
+                          ),
                         ),
                       ),
                     ),
@@ -108,7 +116,7 @@ class PetWidget extends StatelessWidget {
                     ),
                   ),
                   SizedBox(
-                    height: 8,
+                    height: showAsColumn ? 12 : 8,
                   ),
                   Text(
                     pet.name,
@@ -119,7 +127,7 @@ class PetWidget extends StatelessWidget {
                     ),
                   ),
                   SizedBox(
-                    height: 8,
+                    height: showAsColumn ? 12 : 8,
                   ),
                   Row(
                     children: [

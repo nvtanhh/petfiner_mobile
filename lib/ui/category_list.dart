@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:pet_finder/data.dart';
-import 'package:pet_finder/pet_widget.dart';
+import 'package:pet_finder/ui/widgets/pet_widget.dart';
 
 class CategoryList extends StatelessWidget {
-
   final Category category;
 
   CategoryList({@required this.category});
 
-   @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -18,7 +17,14 @@ class CategoryList extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          (category == Category.HAMSTER ? "Hamster" : category == Category.CAT ? "Cat" : category == Category.BUNNY ? "Bunny" : "Dog") + " Category",
+          (category == Category.HAMSTER
+                  ? "Hamster"
+                  : category == Category.CAT
+                      ? "Cat"
+                      : category == Category.OTHER
+                          ? "Bunny"
+                          : "Dog") +
+              " Category",
           style: TextStyle(
             color: Colors.grey[800],
           ),
@@ -45,21 +51,17 @@ class CategoryList extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           Padding(
             padding: EdgeInsets.only(right: 16, left: 16, top: 16, bottom: 32),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-
                 buildFilter("Mating", false),
                 buildFilter("Adoption", true),
                 buildFilter("Disappear", true),
-
               ],
             ),
           ),
-
           Expanded(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
@@ -68,7 +70,9 @@ class CategoryList extends StatelessWidget {
                 childAspectRatio: 1 / 1.55,
                 crossAxisCount: 2,
                 crossAxisSpacing: 15,
-                children: getPetList().where((i) => i.category == category).map((item) {
+                children: getPetList()
+                    .where((i) => i.category == category)
+                    .map((item) {
                   return PetWidget(
                     pet: item,
                     index: null,
@@ -77,15 +81,15 @@ class CategoryList extends StatelessWidget {
               ),
             ),
           ),
-
         ],
       ),
     );
   }
 
-  Widget buildFilter(String name, bool selected){
+  Widget buildFilter(String name, bool selected) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      margin: EdgeInsets.only(right: 5),
+      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.all(
           Radius.circular(20),
@@ -97,9 +101,9 @@ class CategoryList extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: selected ? Colors.blue[300].withOpacity(0.5) : Colors.white,
-            spreadRadius: 3,
-            blurRadius: 5,
-            offset: Offset(0, 0),
+            spreadRadius: 1,
+            blurRadius: 2,
+            offset: Offset(0, 1),
           ),
         ],
         color: selected ? Colors.blue[300] : Colors.white,
@@ -114,24 +118,20 @@ class CategoryList extends StatelessWidget {
               color: selected ? Colors.white : Colors.grey[800],
             ),
           ),
-
-          selected 
-          ? Row(
-            children: [
-
-              SizedBox(
-                width: 8,
-              ),
-
-              Icon(
-                Icons.clear,
-                color: Colors.white,
-                size: 18,
-              ),
-
-            ],
-          )
-          : Container(),
+          selected
+              ? Row(
+                  children: [
+                    SizedBox(
+                      width: 8,
+                    ),
+                    Icon(
+                      Icons.clear,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ],
+                )
+              : Container(),
         ],
       ),
     );

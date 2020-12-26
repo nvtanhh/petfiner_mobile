@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pet_finder/data.dart';
-import 'package:pet_finder/main.dart';
-import 'package:pet_finder/user_avatar.dart';
+import 'package:pet_finder/ui/widgets/user_avatar.dart';
 
 class PetDetail extends StatelessWidget {
   final Pet pet;
@@ -57,6 +56,35 @@ class PetDetail extends StatelessWidget {
                     ),
                   ),
                 ),
+                Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Container(
+                    margin: EdgeInsets.only(bottom: 15, left: 15),
+                    decoration: BoxDecoration(
+                      color: pet.condition == "Adoption"
+                          ? Colors.orange[100]
+                          : pet.condition == "Disappear"
+                              ? Colors.red[100]
+                              : Colors.blue[100],
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(10),
+                      ),
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    child: Text(
+                      pet.condition,
+                      style: TextStyle(
+                        color: pet.condition == "Adoption"
+                            ? Colors.orange
+                            : pet.condition == "Disappear"
+                                ? Colors.red
+                                : Colors.blue,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                )
               ],
             ),
           ),
