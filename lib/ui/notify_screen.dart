@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class NotifyPage extends StatefulWidget {
+class NotifyScreen extends StatefulWidget {
   @override
-  _NotifyPageState createState() => _NotifyPageState();
+  _NotifyScreenState createState() => _NotifyScreenState();
 }
 
-class _NotifyPageState extends State<NotifyPage> {
+class _NotifyScreenState extends State<NotifyScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(

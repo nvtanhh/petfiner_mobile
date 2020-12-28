@@ -1,17 +1,17 @@
 import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_finder/data.dart';
-import 'package:pet_finder/ui/home_page.dart';
-import 'package:pet_finder/ui/notify_page.dart';
-import 'package:pet_finder/ui/profile_page.dart';
-import 'package:pet_finder/ui/search_page.dart';
+import 'package:pet_finder/ui/home_screen.dart';
+import 'package:pet_finder/ui/notify_screen.dart';
+import 'package:pet_finder/ui/profile_screen.dart';
+import 'package:pet_finder/ui/search_screen.dart';
 
-class Navigation extends StatefulWidget {
+class MyNavigator extends StatefulWidget {
   @override
-  _NavigationState createState() => _NavigationState();
+  _MyNavigatorState createState() => _MyNavigatorState();
 }
 
-class _NavigationState extends State<Navigation>
+class _MyNavigatorState extends State<MyNavigator>
     with SingleTickerProviderStateMixin {
   List<Pet> pets = getPetList();
 
@@ -30,10 +30,10 @@ class _NavigationState extends State<Navigation>
   ];
 
   final bodies = <Widget>[
-    HomePage(),
-    SearchPage(),
-    NotifyPage(),
-    ProfilePage(),
+    HomeScreen(),
+    SearchScreen(),
+    NotifyScreen(),
+    ProfileScreen(),
   ];
 
   @override

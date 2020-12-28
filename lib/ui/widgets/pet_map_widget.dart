@@ -22,16 +22,20 @@ class PetMapWidget extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.all(Radius.circular(20)),
-          border: Border.all(
-            color: Colors.grey[200],
-            width: 1,
-          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.5),
+              spreadRadius: 1,
+              blurRadius: 2,
+              offset: Offset(1, 1),
+            ),
+          ],
         ),
         margin: EdgeInsets.only(
             right: index != null ? 16 : 0,
             left: index == 0 ? 16 : 0,
             bottom: 16),
-        width: 220,
+        width: size.width * 0.75,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
@@ -84,7 +88,7 @@ class PetMapWidget extends StatelessWidget {
             ),
             Expanded(
               child: Padding(
-                padding: EdgeInsets.all(8),
+                padding: EdgeInsets.only(left: 15),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,

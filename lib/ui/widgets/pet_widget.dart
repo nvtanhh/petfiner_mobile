@@ -9,7 +9,11 @@ class PetWidget extends StatelessWidget {
   final bool showAsColumn;
 
   PetWidget(
-      {@required this.pet, @required this.index, this.showAsColumn = false});
+      {Key key,
+      @required this.pet,
+      @required this.index,
+      this.showAsColumn = false})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {

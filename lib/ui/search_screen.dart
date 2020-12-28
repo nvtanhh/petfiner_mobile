@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:pet_finder/core/models/vet.dart';
 import 'package:pet_finder/ui/category_list.dart';
-import 'package:pet_finder/ui/search_map_page.dart';
+import 'package:pet_finder/ui/search_map_screen.dart';
 import 'package:pet_finder/ui/widgets/pet_widget.dart';
 
 import '../data.dart';
 
-class SearchPage extends StatefulWidget {
+class SearchScreen extends StatefulWidget {
   @override
-  _SearchPageState createState() => _SearchPageState();
+  _SearchScreenState createState() => _SearchScreenState();
 }
 
-class _SearchPageState extends State<SearchPage> {
+class _SearchScreenState extends State<SearchScreen> {
   List<Pet> pets = getPetList();
 
   List<Vet> vets = [
@@ -46,6 +46,9 @@ class _SearchPageState extends State<SearchPage> {
                 Expanded(
                   child: TextField(
                     decoration: InputDecoration(
+                      isDense: true, // Added this
+                      contentPadding:
+                          EdgeInsets.fromLTRB(8, 8, 30, 8), // Added this
                       hintText: 'Search',
                       hintStyle: TextStyle(fontSize: 16),
                       border: OutlineInputBorder(
@@ -57,14 +60,14 @@ class _SearchPageState extends State<SearchPage> {
                       ),
                       filled: true,
                       fillColor: Colors.grey[100],
-                      contentPadding: EdgeInsets.only(
-                        right: 30,
-                      ),
+                      // contentPadding: EdgeInsets.only(
+                      //   right: 30,
+                      // ),
                       prefixIcon: Padding(
                         padding: EdgeInsets.only(right: 16.0, left: 16),
                         child: Icon(
                           Icons.search,
-                          color: Colors.black,
+                          color: Colors.black54,
                           size: 24,
                         ),
                       ),
