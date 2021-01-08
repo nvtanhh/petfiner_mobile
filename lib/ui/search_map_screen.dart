@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:pet_finder/ui/widgets/pet_map_widget.dart';
-import '../data.dart';
+import 'package:pet_finder/ui/widgets/post_map_widget.dart';
+import 'package:pet_finder/core/models/post.dart';
 
 class MapSearcher extends StatefulWidget {
   MapSearcher({Key key}) : super(key: key);
@@ -15,20 +15,28 @@ class MapSearcher extends StatefulWidget {
 }
 
 class _MapSearcherState extends State<MapSearcher> {
-  Set<Marker> _markers = HashSet<Marker>();
+  Set<Marker> _allMarkers = HashSet<Marker>();
   Set<Circle> _circles = HashSet<Circle>();
   GoogleMapController _mapController;
-  BitmapDescriptor _markerIcon;
+  String _currentRadius;
+  List<String> _radiuses = [
+    '1 kilometer',
+    '2 kilometer',
+    '3 kilometer',
+    '4 kilometer',
+    '5 kilometer'
+  ];
 
   static LatLng _initialPosition = LatLng(10.873286, 106.7914436);
 
-  List<Pet> pets = getPetList();
+  List<Post> posts = getPostList();
 
-  double _radius = 5000;
+  double _radius = 1000;
 
   @override
   void initState() {
     super.initState();
+    _currentRadius = _radiuses[0];
     checkPermision();
     _getUserLocation();
   }
@@ -43,12 +51,18 @@ class _MapSearcherState extends State<MapSearcher> {
       print('${placemark[0].name}');
     });
 
+    _moveCameraToUserLocation();
     _setCircles();
   }
 
   // _onCameraMove(CameraPosition position) {
   //   _lastMapPosition = position.target;
   // }
+  void _moveCameraToUserLocation() {
+    if (_mapController != null) {
+      _mapController.moveCamera(CameraUpdate.newLatLng(_initialPosition));
+    }
+  }
 
   void checkPermision() async {
     if (!await Permission.location.status.isGranted) {
@@ -57,19 +71,23 @@ class _MapSearcherState extends State<MapSearcher> {
   }
 
   void _setCircles() {
-    _circles.add(
+    _circles = Set.from([
       Circle(
-          circleId: CircleId("0"),
-          center: _initialPosition,
+          circleId: CircleId("myCircle"),
           radius: _radius,
+          center: _initialPosition,
           strokeWidth: 1,
-          strokeColor: Colors.blue,
-          fillColor: Colors.blue[200].withOpacity(.4)),
-    );
+          strokeColor: Colors.blue[200],
+          fillColor: Colors.blue[100].withOpacity(.4),
+          onTap: () {
+            print('circle pressed');
+          })
+    ]);
   }
 
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
+    _mapController.moveCamera(CameraUpdate.newLatLng(_initialPosition));
   }
 
   @override
@@ -100,15 +118,18 @@ class _MapSearcherState extends State<MapSearcher> {
         onMapCreated: _onMapCreated,
         initialCameraPosition: CameraPosition(
           target: _initialPosition,
-          zoom: 14.4746,
+          zoom: 12,
         ),
-        markers: _markers,
+        markers: _allMarkers,
         myLocationEnabled: true,
         myLocationButtonEnabled: true,
         compassEnabled: true,
         zoomControlsEnabled: false,
         padding: EdgeInsets.only(top: 100),
         circles: _circles,
+        scrollGesturesEnabled: true,
+        rotateGesturesEnabled: true,
+        tiltGesturesEnabled: true,
       ),
     );
   }
@@ -121,9 +142,9 @@ class _MapSearcherState extends State<MapSearcher> {
         height: 150,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
-          itemCount: pets.length,
+          itemCount: posts.length,
           itemBuilder: (BuildContext context, int index) =>
-              PetMapWidget(pet: pets[index], index: index),
+              PostMapWidget(post: posts[index], index: index),
         ),
       ),
     );
@@ -131,12 +152,12 @@ class _MapSearcherState extends State<MapSearcher> {
 
   Widget _buildSearchBar() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 45, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 40, 16, 12),
       decoration: BoxDecoration(
         color: Theme.of(context).primaryColor,
         borderRadius: BorderRadius.only(
-          bottomRight: Radius.circular(30),
-          bottomLeft: Radius.circular(30),
+          bottomRight: Radius.circular(25),
+          bottomLeft: Radius.circular(25),
         ),
       ),
       child: Row(
@@ -150,29 +171,83 @@ class _MapSearcherState extends State<MapSearcher> {
                 Icons.arrow_back,
                 color: Colors.white,
               )),
-          SizedBox(width: 10),
+          SizedBox(width: 20),
           Expanded(
-            child: Container(
-              height: 38,
-              child: TextField(
-                decoration: InputDecoration(
-                  isDense: true, // Added this
-                  hintText: 'Search',
-
-                  hintStyle: TextStyle(fontSize: 18, color: Colors.white54),
-                  // border: InputBorder.none,
-                  border: new UnderlineInputBorder(
-                      borderSide: new BorderSide(color: Colors.white54)),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white54),
-                  ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white54),
-                  ),
-                  filled: true,
-                  fillColor: Colors.transparent,
+            child: Row(
+              children: [
+                Text(
+                  'Radius: ',
+                  style: TextStyle(color: Colors.white, fontSize: 15),
                 ),
-              ),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Container(
+                    height: 38,
+                    child: ButtonTheme(
+                      alignedDropdown: true,
+                      child: DropdownButton<String>(
+                        iconEnabledColor: Colors.white,
+                        iconDisabledColor: Colors.white,
+                        isExpanded: true,
+                        // hint: Text("Please choose a radius"),
+                        value: _currentRadius,
+                        selectedItemBuilder: (_) {
+                          return _radiuses
+                              .map((String value) =>
+                                  new DropdownMenuItem<String>(
+                                    value: value,
+                                    child: new Text(
+                                      value,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyText1
+                                          .copyWith(
+                                              color: Colors.white,
+                                              fontSize: 15),
+                                    ),
+                                  ))
+                              .toList();
+                        },
+                        items: _radiuses
+                            .map((String value) => new DropdownMenuItem<String>(
+                                  value: value,
+                                  child: new Text(value,
+                                      style: TextStyle(color: Colors.black87)),
+                                ))
+                            .toList(),
+                        onChanged: (newVal) {
+                          setState(() {
+                            _currentRadius = newVal;
+                            _radius = double.parse(
+                                _currentRadius.substring(0, 1) + '000');
+                            print("NEW RADIUS: " + _radius.toString());
+                            _setCircles();
+                          });
+                        },
+                      ),
+                    ),
+                    // child: TextField(
+                    //   decoration: InputDecoration(
+                    //     isDense: true, // Added this
+                    //     hintText: 'Search',
+
+                    //     hintStyle: TextStyle(fontSize: 18, color: Colors.white54),
+                    //     // border: InputBorder.none,
+                    //     border: new UnderlineInputBorder(
+                    //         borderSide: new BorderSide(color: Colors.white54)),
+                    //     enabledBorder: UnderlineInputBorder(
+                    //       borderSide: BorderSide(color: Colors.white54),
+                    //     ),
+                    //     focusedBorder: UnderlineInputBorder(
+                    //       borderSide: BorderSide(color: Colors.white54),
+                    //     ),
+                    //     filled: true,
+                    //     fillColor: Colors.transparent,
+                    //   ),
+                    // ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

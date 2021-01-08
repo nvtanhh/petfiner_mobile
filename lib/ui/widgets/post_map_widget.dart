@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:pet_finder/data.dart';
-import 'package:pet_finder/ui/pet_detail.dart';
+import 'package:pet_finder/core/models/post.dart';
+import 'package:pet_finder/ui/post_detail.dart';
 
-class PetMapWidget extends StatelessWidget {
-  final Pet pet;
+class PostMapWidget extends StatelessWidget {
+  final Post post;
   final int index;
 
-  PetMapWidget({@required this.pet, @required this.index});
+  PostMapWidget({@required this.post, @required this.index});
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +15,7 @@ class PetMapWidget extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => PetDetail(pet: pet)),
+          MaterialPageRoute(builder: (context) => PostDetail(post: post)),
         );
       },
       child: Container(
@@ -43,13 +43,13 @@ class PetMapWidget extends StatelessWidget {
               child: Stack(
                 children: [
                   Hero(
-                    tag: pet.imageUrl,
+                    tag: post.imageUrls[0],
                     child: Container(
                       // height: 150,
                       width: size.width * 0.3,
                       decoration: BoxDecoration(
                         image: DecorationImage(
-                          image: AssetImage(pet.imageUrl),
+                          image: AssetImage(post.imageUrls[0]),
                           fit: BoxFit.cover,
                         ),
                         borderRadius: BorderRadius.only(
@@ -70,14 +70,16 @@ class PetMapWidget extends StatelessWidget {
                           width: 20,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color:
-                                pet.favorite ? Colors.red[400] : Colors.white,
+                            color: post.pet.favorite
+                                ? Colors.red[400]
+                                : Colors.white,
                           ),
                           child: Icon(
                             Icons.favorite,
                             size: 16,
-                            color:
-                                pet.favorite ? Colors.white : Colors.grey[300],
+                            color: post.pet.favorite
+                                ? Colors.white
+                                : Colors.grey[300],
                           ),
                         ),
                       ),
@@ -95,9 +97,9 @@ class PetMapWidget extends StatelessWidget {
                   children: [
                     Container(
                       decoration: BoxDecoration(
-                        color: pet.condition == "Adoption"
+                        color: post.condition == Condition.Adoption
                             ? Colors.orange[100]
-                            : pet.condition == "Disappear"
+                            : post.condition == Condition.Disappear
                                 ? Colors.red[100]
                                 : Colors.blue[100],
                         borderRadius: BorderRadius.all(
@@ -106,11 +108,11 @@ class PetMapWidget extends StatelessWidget {
                       ),
                       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       child: Text(
-                        pet.condition,
+                        post.conditionText(),
                         style: TextStyle(
-                          color: pet.condition == "Adoption"
+                          color: post.condition == Condition.Adoption
                               ? Colors.orange
-                              : pet.condition == "Disappear"
+                              : post.condition == Condition.Disappear
                                   ? Colors.red
                                   : Colors.blue,
                           fontWeight: FontWeight.bold,
@@ -122,7 +124,7 @@ class PetMapWidget extends StatelessWidget {
                       height: 8,
                     ),
                     Text(
-                      pet.name,
+                      post.pet.name,
                       style: TextStyle(
                         color: Colors.grey[800],
                         fontSize: 14,
@@ -149,7 +151,7 @@ class PetMapWidget extends StatelessWidget {
                         ),
                         Flexible(
                           child: Text(
-                            pet.location,
+                            post.pet.location,
                             // overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: Colors.grey[600],
@@ -162,7 +164,7 @@ class PetMapWidget extends StatelessWidget {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      " (" + pet.distance + "km)",
+                      " (" + post.pet.distance + "km)",
                       // overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: Colors.grey[600],

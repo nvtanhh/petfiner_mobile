@@ -34,6 +34,9 @@ dependencies:
   permission_handler: ^5.0.1
   geolocator: ^5.3.0
   flutter_svg: ^0.19.0
+  image_picker: ^0.6.7+17
+  path_provider: ^1.6.24
+  image: ^2.1.19
 
 dev_dependencies:
   flutter_test:
@@ -58,6 +61,7 @@ flutter:
     - assets/images/dogs/
     - assets/images/hamsters/
     - assets/images/bunnies/
+    - assets/images/sample/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

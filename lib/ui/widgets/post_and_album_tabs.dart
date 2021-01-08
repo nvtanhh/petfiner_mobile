@@ -1,30 +1,150 @@
 import 'package:flutter/material.dart';
-import 'package:pet_finder/data.dart';
-import 'package:pet_finder/ui/pet_detail.dart';
+import 'package:pet_finder/core/models/pet.dart';
+import 'package:pet_finder/core/models/post.dart';
+import 'package:pet_finder/ui/post_detail.dart';
+import 'package:pet_finder/ui/widgets/post_widget.dart';
 
-class PetWidget extends StatelessWidget {
-  final Pet pet;
-  final int index;
+class PostAndAblumWrapper extends StatefulWidget {
+  PostAndAblumWrapper({Key key}) : super(key: key);
 
-  final bool showAsColumn;
+  @override
+  _PostAndAblumWrapperState createState() => _PostAndAblumWrapperState();
+}
 
-  PetWidget(
-      {Key key,
-      @required this.pet,
-      @required this.index,
-      this.showAsColumn = false})
-      : super(key: key);
+class _PostAndAblumWrapperState extends State<PostAndAblumWrapper> {
+  List<Post> posts = getPostList();
+  Color _gridColor = Colors.blue;
+  Color _listColor = Colors.grey;
+  bool _isGridActive = true;
 
   @override
   Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 5),
+          child: Divider(),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 5),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              GestureDetector(
+                child: Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: Icon(
+                    Icons.grid_on,
+                    color: _gridColor,
+                    size: 22,
+                  ),
+                ),
+                onTap: () {
+                  setState(() {
+                    _isGridActive = true;
+                    _gridColor = Colors.blue;
+                    _listColor = Colors.grey;
+                  });
+                },
+              ),
+              GestureDetector(
+                child: Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: Icon(
+                    Icons.stay_current_portrait,
+                    color: _listColor,
+                    size: 22,
+                  ),
+                ),
+                onTap: () {
+                  setState(() {
+                    _isGridActive = false;
+                    _listColor = Colors.blue;
+                    _gridColor = Colors.grey;
+                  });
+                },
+              )
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 5),
+          child: Divider(),
+        ),
+        postImagesWidget(),
+      ],
+    );
+  }
+
+  Widget postImagesWidget() {
+    return _isGridActive == true ? _showAsGrid() : _showAsPost();
+  }
+
+  Widget _showAsPost() {
+    return ListView.builder(
+      physics: NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      padding: EdgeInsets.only(top: 10, left: 16, right: 16),
+      scrollDirection: Axis.vertical,
+      itemCount: posts.length,
+      itemBuilder: (context, index) => Container(
+        height: 300,
+        child: PostWidget(post: posts[index], showAsColumn: true),
+      ),
+    );
+  }
+
+  Widget _showAsGrid() {
+    return GridView.builder(
+      physics: NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      itemCount: posts.length,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3, crossAxisSpacing: 4.0, mainAxisSpacing: 4.0),
+      itemBuilder: (context, index) => GestureDetector(
+        child: Hero(
+          tag: posts[index].pet.defaultImageUrl,
+          child: Image.asset(
+            posts[index].pet.defaultImageUrl,
+            width: 125.0,
+            height: 125.0,
+            fit: BoxFit.cover,
+          ),
+        ),
+        onTap: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: ((context) => PostDetail(post: posts[index]))));
+        },
+      ),
+    );
+  }
+}
+
+class PostView extends StatelessWidget {
+  final Post post;
+  final int index;
+  final bool showAsColumn;
+
+  const PostView({
+    Key key,
+    @required this.post,
+    this.index = -1,
+    this.showAsColumn = false,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    Pet pet = post.pet;
+
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => PetDetail(pet: pet)),
-        );
+        Navigator.push(context,
+            MaterialPageRoute(builder: ((context) => PostDetail(post: post))));
       },
       child: Container(
+        alignment: Alignment.center,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.only(
@@ -40,19 +160,20 @@ class PetWidget extends StatelessWidget {
             right: !showAsColumn && index != null ? 16 : 0,
             left: !showAsColumn && index == 0 ? 16 : 0,
             bottom: 16),
-        width: 220,
+        // width: 220,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Expanded(
               child: Stack(
                 children: [
                   Hero(
-                    tag: pet.imageUrl,
+                    tag: post.imageUrls[0],
                     child: Container(
                       decoration: BoxDecoration(
                         image: DecorationImage(
-                          image: AssetImage(pet.imageUrl),
+                          image: AssetImage(post.imageUrls[0]),
                           fit: BoxFit.cover,
                         ),
                         borderRadius: BorderRadius.only(
@@ -73,8 +194,9 @@ class PetWidget extends StatelessWidget {
                           width: 30,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color:
-                                pet.favorite ? Colors.red[400] : Colors.white,
+                            color: post.pet.favorite
+                                ? Colors.red[400]
+                                : Colors.white,
                           ),
                           child: Icon(
                             Icons.favorite,
@@ -96,9 +218,9 @@ class PetWidget extends StatelessWidget {
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      color: pet.condition == "Adoption"
+                      color: post.condition == Condition.Adoption
                           ? Colors.orange[100]
-                          : pet.condition == "Disappear"
+                          : post.condition == Condition.Disappear
                               ? Colors.red[100]
                               : Colors.blue[100],
                       borderRadius: BorderRadius.all(
@@ -107,11 +229,11 @@ class PetWidget extends StatelessWidget {
                     ),
                     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     child: Text(
-                      pet.condition,
+                      post.conditionText(),
                       style: TextStyle(
-                        color: pet.condition == "Adoption"
+                        color: post.condition == Condition.Adoption
                             ? Colors.orange
-                            : pet.condition == "Disappear"
+                            : post.condition == Condition.Disappear
                                 ? Colors.red
                                 : Colors.blue,
                         fontWeight: FontWeight.bold,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:pet_finder/ui/widgets/pet_widget.dart';
+import 'package:pet_finder/ui/widgets/post_widget.dart';
 
-import '../data.dart';
+import '../core/models/post.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -9,12 +9,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Pet> pets = getPetList();
+  List<Post> pets = getPostList();
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        backgroundColor: Colors.white,
         body: Column(
           children: [
             _buildAppBar(),
@@ -59,10 +60,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           Container(
                         height: 300,
                         margin: EdgeInsets.only(bottom: 20),
-                        child: PetWidget(
+                        child: PostWidget(
                           key: ObjectKey(pets[index]),
-                          pet: pets[index],
-                          index: index,
+                          post: pets[index],
                           showAsColumn: true,
                         ),
                       ),
@@ -98,25 +98,5 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
-
-    //         AppBar(
-    //   brightness: Brightness.light,
-    //   backgroundColor: Colors.transparent,
-    //   elevation: 0,
-    //   leading: Container(
-    //     margin: EdgeInsets.only(left: 16),
-    //     child: Image.asset('assets/images/text_art.png',
-    //         height: 56, width: 200, fit: BoxFit.fill),
-    //   ),
-    //   actions: [
-    //     Padding(
-    //       padding: EdgeInsets.only(right: 16),
-    //       child: Icon(
-    //         Icons.message_outlined,
-    //         color: Colors.grey[800],
-    //       ),
-    //     ),
-    //   ],
-    // )
   }
 }

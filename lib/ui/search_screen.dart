@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:pet_finder/core/models/vet.dart';
 import 'package:pet_finder/ui/category_list.dart';
 import 'package:pet_finder/ui/search_map_screen.dart';
-import 'package:pet_finder/ui/widgets/pet_widget.dart';
+import 'package:pet_finder/ui/widgets/post_widget.dart';
 
-import '../data.dart';
+import 'package:pet_finder/core/models/pet.dart';
+import 'package:pet_finder/core/models/post.dart';
 
 class SearchScreen extends StatefulWidget {
   @override
@@ -12,7 +13,7 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  List<Pet> pets = getPetList();
+  List<Post> posts = getPostList();
 
   List<Vet> vets = [
     new Vet(
@@ -83,7 +84,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     padding: EdgeInsets.only(left: 16),
                     child: Icon(
                       Icons.location_on,
-                      color: Colors.green[700],
+                      color: Colors.blue[700],
                     ),
                   ),
                 )
@@ -263,9 +264,9 @@ class _SearchScreenState extends State<SearchScreen> {
 
   List<Widget> buildNewestPet() {
     List<Widget> list = [];
-    for (var i = 0; i < pets.length; i++) {
-      if (pets[i].newest) {
-        list.add(PetWidget(pet: pets[i], index: i));
+    for (var i = 0; i < posts.length; i++) {
+      if (posts[i].pet.newest) {
+        list.add(PostWidget(post: posts[i], index: i));
       }
     }
     return list;

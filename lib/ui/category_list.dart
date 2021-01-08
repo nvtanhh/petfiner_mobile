@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:pet_finder/data.dart';
-import 'package:pet_finder/ui/widgets/pet_widget.dart';
+import 'package:pet_finder/core/models/post.dart';
+import 'package:pet_finder/core/models/pet.dart';
+import 'package:pet_finder/ui/widgets/post_widget.dart';
 
 class CategoryList extends StatelessWidget {
   final Category category;
@@ -70,11 +71,11 @@ class CategoryList extends StatelessWidget {
                 childAspectRatio: 1 / 1.55,
                 crossAxisCount: 2,
                 crossAxisSpacing: 15,
-                children: getPetList()
-                    .where((i) => i.category == category)
+                children: getPostList()
+                    .where((i) => i.pet.category == category)
                     .map((item) {
-                  return PetWidget(
-                    pet: item,
+                  return PostWidget(
+                    post: item,
                     index: null,
                   );
                 }).toList(),
