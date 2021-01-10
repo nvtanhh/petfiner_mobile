@@ -18,6 +18,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
+          iconTheme: IconThemeData(
+            color: Colors.black,
+          ),
+          automaticallyImplyLeading: true,
           title: Text(
             "Catlover_2549",
             style: const TextStyle(color: Colors.black),

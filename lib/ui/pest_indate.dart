@@ -1,13 +1,16 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pet_finder/core/models/pet.dart';
 import 'package:image/image.dart' as Im;
+import 'package:pet_finder/locationpiker/widgets/widgets.dart';
 import 'package:pet_finder/ui/widgets/input_wrapper.dart';
 import 'package:pet_finder/utils.dart';
 
@@ -36,6 +39,7 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
   final _weightController = TextEditingController();
   final _breedController = TextEditingController();
   final _birthdayController = TextEditingController();
+  final _addressController = TextEditingController();
 
   @override
   void initState() {
@@ -160,10 +164,40 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
                             onTab: () => _selectDate(context),
                             controller: _birthdayController,
                             title: 'Birthday',
-                            type: 2,
+                            isReadOnly: true,
                           ),
                         ),
                       ],
+                    ),
+                    InputContainerWrapper(
+                      controller: _addressController
+                        ..text = _addressController.text.isNotEmpty
+                            ? "   " + _addressController.text
+                            : ' ',
+                      title: 'Address',
+                      prefix: Icon(
+                        Icons.location_on,
+                        color: Colors.green,
+                        size: 16,
+                      ),
+                      isReadOnly: true,
+                      onTab: () async {
+                        String data = await DefaultAssetBundle.of(context)
+                            .loadString(".env.json");
+
+                        String apiKey = jsonDecode(data)["MAP_API_KEY"];
+                        LatLng latLng = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: ((context) => PlacePicker(apiKey))));
+
+                        print("RESULT: " + latLng.toString());
+                        setState(() {
+                          _addressController.text = latLng.latitude.toString() +
+                              " | " +
+                              latLng.longitude.toString();
+                        });
+                      },
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -397,21 +431,21 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
 
   _buildDropdownGender() {
     return Container(
-      height: 57,
+      height: 49,
       child: InputDecorator(
         decoration: const InputDecoration(
-          hintText: "Gender",
-          // isDense: true,
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.blue, width: 1.5),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Color(0xFFBDBDBD), width: 1.5),
-          ),
-          filled: true,
-          fillColor: Colors.white,
-          labelStyle: TextStyle(fontSize: 12, color: Colors.grey),
-        ),
+            hintText: "Gender",
+            isDense: true,
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.blue, width: 1.5),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Color(0xFFBDBDBD), width: 1.5),
+            ),
+            filled: true,
+            fillColor: Colors.white,
+            labelStyle: TextStyle(fontSize: 14, color: Colors.grey),
+            labelText: 'Gender'),
         child: DropdownButtonHideUnderline(
           child: DropdownButton(
             items: _genders.map((String category) {

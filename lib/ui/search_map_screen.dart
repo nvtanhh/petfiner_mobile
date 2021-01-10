@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -24,7 +25,8 @@ class _MapSearcherState extends State<MapSearcher> {
     '2 kilometer',
     '3 kilometer',
     '4 kilometer',
-    '5 kilometer'
+    '5 kilometer',
+    '10 kilometer',
   ];
 
   static LatLng _initialPosition = LatLng(10.873286, 106.7914436);
@@ -58,9 +60,13 @@ class _MapSearcherState extends State<MapSearcher> {
   // _onCameraMove(CameraPosition position) {
   //   _lastMapPosition = position.target;
   // }
-  void _moveCameraToUserLocation() {
+  void _moveCameraToUserLocation({double zoom}) {
     if (_mapController != null) {
-      _mapController.moveCamera(CameraUpdate.newLatLng(_initialPosition));
+      if (zoom == null)
+        _mapController.animateCamera(CameraUpdate.newLatLng(_initialPosition));
+      else
+        _mapController
+            .animateCamera(CameraUpdate.newLatLngZoom(_initialPosition, zoom));
     }
   }
 
@@ -118,7 +124,7 @@ class _MapSearcherState extends State<MapSearcher> {
         onMapCreated: _onMapCreated,
         initialCameraPosition: CameraPosition(
           target: _initialPosition,
-          zoom: 12,
+          zoom: getZoomLevel(_radius),
         ),
         markers: _allMarkers,
         myLocationEnabled: true,
@@ -132,6 +138,18 @@ class _MapSearcherState extends State<MapSearcher> {
         tiltGesturesEnabled: true,
       ),
     );
+  }
+
+  double getZoomLevel(double radius) {
+    double zoomLevel = 11;
+    if (radius > 0) {
+      double radiusElevated = radius + radius / 2;
+      double scale = radiusElevated / 500;
+      zoomLevel = 16 - log(scale) / log(2);
+    }
+    zoomLevel = num.parse(zoomLevel.toStringAsFixed(2));
+    _moveCameraToUserLocation(zoom: zoomLevel);
+    return zoomLevel;
   }
 
   Widget _buildContainer() {
@@ -218,8 +236,11 @@ class _MapSearcherState extends State<MapSearcher> {
                         onChanged: (newVal) {
                           setState(() {
                             _currentRadius = newVal;
-                            _radius = double.parse(
-                                _currentRadius.substring(0, 1) + '000');
+                            _radius = double.parse(_currentRadius.substring(
+                                  0,
+                                  _currentRadius.indexOf(' '),
+                                ) +
+                                '000');
                             print("NEW RADIUS: " + _radius.toString());
                             _setCircles();
                           });

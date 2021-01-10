@@ -3,6 +3,8 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_finder/app_them.dart';
 import 'package:pet_finder/ui/bottom_navigator.dart';
+import 'package:pet_finder/ui/choose_pet_create_post.dart';
+import 'package:pet_finder/ui/create_post.dart';
 
 void main() {
   runApp(MyApp());

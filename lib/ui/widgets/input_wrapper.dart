@@ -4,16 +4,17 @@ class InputContainerWrapper extends StatelessWidget {
   final TextEditingController controller;
   final String title;
   final int maxLines;
-  final int type;
-
   final Function onTab;
+  final Widget prefix;
+  final bool isReadOnly;
   const InputContainerWrapper(
       {Key key,
       @required this.controller,
       @required this.title,
       this.maxLines = 1,
-      this.type = 1,
-      this.onTab})
+      this.onTab,
+      this.prefix,
+      this.isReadOnly = false})
       : super(key: key);
 
   @override
@@ -24,6 +25,7 @@ class InputContainerWrapper extends StatelessWidget {
         onTap: onTab,
         controller: controller,
         decoration: InputDecoration(
+          isDense: true,
           fillColor: Colors.white,
           filled: true,
           // isDense: true,
@@ -34,12 +36,13 @@ class InputContainerWrapper extends StatelessWidget {
             borderSide: BorderSide(color: Colors.grey[400], width: 1.5),
           ),
           labelText: title,
-          labelStyle: TextStyle(fontSize: 12, color: Colors.grey),
+          labelStyle: TextStyle(fontSize: 14, color: Colors.grey),
+          prefix: prefix ?? null,
           // enabled: false
         ),
         style: TextStyle(fontSize: 14, color: Colors.black87),
         maxLines: maxLines,
-        readOnly: type == 2 ? true : false,
+        readOnly: isReadOnly,
       ),
     );
   }

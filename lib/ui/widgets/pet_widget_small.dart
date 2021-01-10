@@ -9,8 +9,14 @@ class PetWidget extends StatelessWidget {
 
   final bool last;
   final bool showAsColumn;
+
+  final bool isExpanded;
   const PetWidget(
-      {Key key, this.pet, this.last = false, this.showAsColumn = false})
+      {Key key,
+      this.pet,
+      this.last = false,
+      this.showAsColumn = false,
+      this.isExpanded})
       : super(key: key);
 
   @override

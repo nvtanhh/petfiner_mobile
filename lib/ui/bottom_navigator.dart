@@ -1,6 +1,7 @@
 import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_finder/core/models/pet.dart';
+import 'package:pet_finder/ui/choose_pet_create_post.dart';
 import 'package:pet_finder/ui/home_screen.dart';
 import 'package:pet_finder/ui/notify_screen.dart';
 import 'package:pet_finder/ui/profile_screen.dart';
@@ -16,7 +17,7 @@ class _MyNavigatorState extends State<MyNavigator>
   List<Pet> pets = getPetList();
 
   // final autoSizeGroup = AutoSizeGroup();
-  var _bottomNavIndex = 3; //default index of first screen
+  var _bottomNavIndex = 0; //default index of first screen
 
   AnimationController _animationController;
   Animation<double> animation;
@@ -80,6 +81,9 @@ class _MyNavigatorState extends State<MyNavigator>
             onPressed: () {
               _animationController.reset();
               _animationController.forward();
+
+              Navigator.push(context,
+                  MaterialPageRoute(builder: ((context) => ChoosePet())));
             },
           ),
         ),

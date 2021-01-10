@@ -102,7 +102,9 @@ class _EditProfileState extends State<EditProfile> {
                 ),
                 radius: 50,
                 backgroundImage: widget.photoUrl.isEmpty
-                    ? AssetImage('assets/images/sample/avt.jpg')
+                    ? imageFile == null
+                        ? AssetImage('assets/images/sample/avt.jpg')
+                        : FileImage(imageFile)
                     : NetworkImage(widget.photoUrl),
               ),
             ],
