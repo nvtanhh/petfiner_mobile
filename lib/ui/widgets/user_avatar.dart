@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:pet_finder/core/models/user.dart';
 import 'package:pet_finder/ui/profile_screen.dart';
 
 class UserAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.push(
-          context, MaterialPageRoute(builder: (context) => ProfileScreen())),
+      onTap: () =>
+          Navigator.push(context, MaterialPageRoute(builder: (context) {
+        var profileScreen = ProfileScreen(user: User.empty());
+        return profileScreen;
+      })),
       child: Container(
         height: 60,
         width: 60,

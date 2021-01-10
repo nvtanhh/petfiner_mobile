@@ -1,10 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:pet_finder/core/apis.dart';
 import 'package:pet_finder/ui/auth/signup.dart';
 import 'package:pet_finder/ui/auth/widgets/already_have_an_account_acheck.dart';
 import 'package:pet_finder/ui/auth/widgets/rounded_button.dart';
 import 'package:pet_finder/ui/auth/widgets/rounded_input_field.dart';
 import 'package:pet_finder/ui/auth/widgets/rounded_password_field.dart';
 import 'package:pet_finder/ui/bottom_navigator.dart';
+import 'package:http/http.dart' as http;
 
 class LoginScreen extends StatefulWidget {
   final String initEmail;
@@ -119,23 +124,55 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _login() async {
-    // Utils.onLoading();
+    EasyLoading.show(status: 'Loading...');
 
-    // if (_email.isNotEmpty && _password.isNotEmpty) {
-    //   dynamic result =
-    //       await AuthService().signInWithEmailAndPassword(_email, _password);
-    //   if (result is User) {
+    if (_email.isNotEmpty && _password.isNotEmpty) {
+      http.Response response = await http.post(
+        Apis.getLoginUrl,
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(
+            <String, String>{'email': _email, 'password': _password}),
+      );
+      print(response.statusCode);
+      if (response.statusCode == 200) {
+        var token = response.body;
+        if (token != null) {
+          await EasyLoading.dismiss();
+          print("TOKEN: " + token);
+          Navigator.pushReplacement(
+              context,
+              new MaterialPageRoute(
+                builder: (context) => MyNavigator(),
+              ));
+        } else {
+          await EasyLoading.dismiss();
+          EasyLoading.showToast("Login failed.");
+        }
+      } else if (response.statusCode == 200) {
+        await EasyLoading.dismiss();
+        EasyLoading.showError('Error');
+      } else {}
+    } else {
+      await EasyLoading.dismiss();
+      EasyLoading.showToast("Please fill your email and password first.");
+    }
+
+    //   dynamic result = await Apis.login(_email, _password);
+    //   if (result != null) {
     //     await EasyLoading.dismiss();
-    //     print("user id " + result.uid);
+    //     print("user token " + result);
     //     // navigateToHome(context);
+    //     Navigator.pushReplacement(
+    //         context, MaterialPageRoute(builder: (context) => MyNavigator()));
     //   } else {
     //     await EasyLoading.dismiss();
-    //     Utils.showToast(result);
+    //     EasyLoading.showToast(result);
     //   }
     // } else {
-    //   Utils.showToast("Email hoặc mật khẩu trống");
-    Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => MyNavigator()));
+    //   EasyLoading.showToast("Email hoặc mật khẩu trống");
+    // }
   }
 }
 

@@ -133,7 +133,7 @@ class _EditProfileState extends State<EditProfile> {
                     const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 child: TextField(
                   controller: _bioController,
-                  maxLines: 3,
+                  // maxLines: 1,
                   decoration: InputDecoration(
                     labelText: 'Bio',
                     labelStyle: TextStyle(fontSize: 14),
@@ -146,7 +146,7 @@ class _EditProfileState extends State<EditProfile> {
                 ),
               ),
               SizedBox(
-                height: 20,
+                height: 30,
               ),
               Padding(
                 padding: const EdgeInsets.only(left: 16.0),

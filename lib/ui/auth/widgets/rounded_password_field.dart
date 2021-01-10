@@ -30,14 +30,14 @@ class _RoundedPasswordFieldState extends State<RoundedPasswordField> {
   Widget build(BuildContext context) {
     return TextFieldContainer(
       child: TextFormField(
-        validator: (val) {
-          if (val.length == 0)
-            return "Please enter password";
-          else if (val.length <= 5)
-            return "Your password should be more then 6 char long";
-          else
-            return null;
-        },
+        // validator: (val) {
+        //   if (val.length == 0)
+        //     return "Please enter password";
+        //   else if (val.length <= 5)
+        //     return "Your password should be more then 6 char long";
+        //   else
+        //     return null;
+        // },
         obscureText: _obscureText,
         enableSuggestions: false,
         autocorrect: false,

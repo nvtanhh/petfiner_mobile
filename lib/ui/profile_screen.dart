@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:pet_finder/core/models/pet.dart';
+import 'package:pet_finder/core/models/user.dart';
+import 'package:pet_finder/ui/auth/login.dart';
 import 'package:pet_finder/ui/edit_profile.dart';
 import 'package:pet_finder/ui/pets_manager.dart';
 import 'package:pet_finder/ui/widgets/pet_widget_small.dart';
 import 'package:pet_finder/ui/widgets/post_and_album_tabs.dart';
 
 class ProfileScreen extends StatefulWidget {
+  final User user;
+
+  ProfileScreen({this.user});
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
 }
@@ -27,6 +32,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             style: const TextStyle(color: Colors.black),
           ),
           backgroundColor: Colors.white,
+          actions: [
+            if (widget.user == null)
+              IconButton(icon: Icon(Icons.logout), onPressed: _showLogoutDialog)
+          ],
         ),
         body: ListView(
           physics: BouncingScrollPhysics(),
@@ -160,46 +169,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
               ),
-              // Expanded(
-              //   child: Container(
-              //     alignment: Alignment.center,
-              //     decoration: BoxDecoration(
-              //         borderRadius: BorderRadius.all(
-              //           Radius.circular(5),
-              //         ),
-              //         // border: Border.all(width: 1, color: Colors.grey),
-              //         color: Theme.of(context).primaryColor),
-              //     child: Padding(
-              //       padding: const EdgeInsets.all(8),
-              //       child: Text(
-              //         'Follow',
-              //         style: TextStyle(
-              //             color: Colors.white, fontWeight: FontWeight.bold),
-              //       ),
-              //     ),
-              //   ),
-              // ),
-              // SizedBox(
-              //   width: 10,
-              // ),
-              // Expanded(
-              //   child: Container(
-              //     alignment: Alignment.center,
-              //     decoration: BoxDecoration(
-              //       borderRadius: BorderRadius.all(
-              //         Radius.circular(5),
-              //       ),
-              //       border: Border.all(
-              //         width: 1.5,
-              //         color: Colors.grey[400],
-              //       ),
-              //     ),
-              //     child: Padding(
-              //       padding: const EdgeInsets.fromLTRB(8, 7, 8, 7),
-              //       child: Text('Contact'),
-              //     ),
-              //   ),
-              // )
             ],
           ),
         ],
@@ -257,5 +226,57 @@ class _ProfileScreenState extends State<ProfileScreen> {
         )
       ],
     );
+  }
+
+  _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return new AlertDialog(
+          content: Text(
+            "Are you sure to logout?",
+            style: TextStyle(
+                fontWeight: FontWeight.w400,
+                fontSize: 16,
+                color: Colors.black54),
+          ),
+          actions: <Widget>[
+            ButtonTheme(
+              //minWidth: double.infinity,
+              child: RaisedButton(
+                elevation: 3.0,
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('Cancel'),
+                color: Colors.grey[400],
+                textColor: const Color(0xffffffff),
+              ),
+            ),
+            ButtonTheme(
+              //minWidth: double.infinity,
+              child: RaisedButton(
+                elevation: 3.0,
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _logout();
+                },
+                child: Text('Logout'),
+                color: Theme.of(context).primaryColor,
+                textColor: const Color(0xffffffff),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _logout() {
+    Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => LoginScreen(),
+        ));
   }
 }
