@@ -85,7 +85,7 @@ class MyPetsWrapper extends StatelessWidget {
         child: Row(
           children: [
             CircleAvatar(
-              backgroundImage: AssetImage(pet.defaultImageUrl),
+              backgroundImage: AssetImage(pet.avatar),
               radius: 25,
             ),
             SizedBox(

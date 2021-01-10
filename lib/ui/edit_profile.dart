@@ -80,40 +80,41 @@ class _EditProfileState extends State<EditProfile> {
       body: ListView(
         physics: BouncingScrollPhysics(),
         children: <Widget>[
-          Column(
-            children: <Widget>[
-              GestureDetector(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 12.0),
-                    child: Container(
-                        width: 110.0,
-                        height: 110.0,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(80.0),
-                          image: DecorationImage(
-                              image: widget.photoUrl.isEmpty
-                                  ? AssetImage('assets/images/sample/avt.jpg')
-                                  : NetworkImage(widget.photoUrl),
-                              fit: BoxFit.cover),
-                        )),
+          SizedBox(height: 30),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircleAvatar(
+                child: Align(
+                  alignment: Alignment.bottomRight,
+                  child: GestureDetector(
+                    onTap: _showImageDialog,
+                    child: CircleAvatar(
+                      backgroundColor: Colors.white,
+                      radius: 15,
+                      child: Icon(
+                        Icons.camera_alt,
+                        size: 15.0,
+                        color: Color(0xFF404040),
+                      ),
+                    ),
                   ),
-                  onTap: _showImageDialog),
-              GestureDetector(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 12.0),
-                  child: Text('Change Photo',
-                      style: TextStyle(
-                          color: Theme.of(context).primaryColor, fontSize: 16)),
                 ),
-                onTap: _showImageDialog,
-              )
+                radius: 50,
+                backgroundImage: widget.photoUrl.isEmpty
+                    ? AssetImage('assets/images/sample/avt.jpg')
+                    : NetworkImage(widget.photoUrl),
+              ),
             ],
+          ),
+          SizedBox(
+            height: 20,
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: TextField(
                   controller: _nameController,
                   decoration: InputDecoration(
@@ -127,7 +128,7 @@ class _EditProfileState extends State<EditProfile> {
               ),
               Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8.0),
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 child: TextField(
                   controller: _bioController,
                   maxLines: 3,
@@ -146,7 +147,7 @@ class _EditProfileState extends State<EditProfile> {
                 height: 20,
               ),
               Padding(
-                padding: const EdgeInsets.only(left: 15.0),
+                padding: const EdgeInsets.only(left: 16.0),
                 child: Text(
                   'Private Information',
                   style: TextStyle(

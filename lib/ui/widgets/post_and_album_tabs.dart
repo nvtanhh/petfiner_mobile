@@ -103,9 +103,9 @@ class _PostAndAblumWrapperState extends State<PostAndAblumWrapper> {
           crossAxisCount: 3, crossAxisSpacing: 4.0, mainAxisSpacing: 4.0),
       itemBuilder: (context, index) => GestureDetector(
         child: Hero(
-          tag: posts[index].pet.defaultImageUrl,
+          tag: posts[index].imageUrls[0],
           child: Image.asset(
-            posts[index].pet.defaultImageUrl,
+            posts[index].imageUrls[0],
             width: 125.0,
             height: 125.0,
             fit: BoxFit.cover,

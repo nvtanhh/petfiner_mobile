@@ -2,15 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:pet_finder/core/models/pet.dart';
 import 'package:pet_finder/core/models/post.dart';
 import 'package:pet_finder/ui/widgets/user_avatar.dart';
+import 'package:pet_finder/ui/pet_detail.dart';
 
-class PostDetail extends StatelessWidget {
+class PostDetail extends StatefulWidget {
   final Post post;
 
   PostDetail({this.post});
 
   @override
+  _PostDetailState createState() => _PostDetailState();
+}
+
+class _PostDetailState extends State<PostDetail> {
+  int currentTabImage = 1;
+
+  @override
   Widget build(BuildContext context) {
-    Pet pet = post.pet;
+    Pet pet = widget.post.pet;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -44,17 +52,34 @@ class PostDetail extends StatelessWidget {
           Expanded(
             child: Stack(
               children: [
-                Hero(
-                  tag: post.imageUrls[0],
+                PageView.builder(
+                  onPageChanged: onPageChanged,
+                  itemCount: widget.post.imageUrls.length,
+                  itemBuilder: (context, index) => index == 0
+                      ? Hero(
+                          tag: widget.post.imageUrls[index],
+                          child: _buildImage(index),
+                        )
+                      : _buildImage(index),
+                ),
+                Align(
+                  alignment: Alignment.bottomRight,
                   child: Container(
+                    margin: EdgeInsets.only(bottom: 15, right: 15),
                     decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage(post.imageUrls[0]),
-                        fit: BoxFit.cover,
+                      color: Colors.grey[300].withOpacity(.6),
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(10),
                       ),
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(25),
-                        bottomRight: Radius.circular(25),
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    child: Text(
+                      currentTabImage.toString() +
+                          " / " +
+                          widget.post.imageUrls.length.toString(),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
                       ),
                     ),
                   ),
@@ -64,9 +89,9 @@ class PostDetail extends StatelessWidget {
                   child: Container(
                     margin: EdgeInsets.only(bottom: 15, left: 15),
                     decoration: BoxDecoration(
-                      color: post.conditionText() == "Adoption"
+                      color: widget.post.conditionText() == "Adoption"
                           ? Colors.orange[100]
-                          : post.conditionText() == "Disappear"
+                          : widget.post.conditionText() == "Disappear"
                               ? Colors.red[100]
                               : Colors.blue[100],
                       borderRadius: BorderRadius.all(
@@ -75,11 +100,11 @@ class PostDetail extends StatelessWidget {
                     ),
                     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     child: Text(
-                      post.conditionText(),
+                      widget.post.conditionText(),
                       style: TextStyle(
-                        color: post.conditionText() == "Adoption"
+                        color: widget.post.conditionText() == "Adoption"
                             ? Colors.orange
-                            : post.conditionText() == "Disappear"
+                            : widget.post.conditionText() == "Disappear"
                                 ? Colors.red
                                 : Colors.blue,
                         fontWeight: FontWeight.bold,
@@ -104,12 +129,18 @@ class PostDetail extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            pet.name,
-                            style: TextStyle(
-                              color: Colors.grey[800],
-                              fontWeight: FontWeight.bold,
-                              fontSize: 24,
+                          GestureDetector(
+                            onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute<void>(
+                                    builder: (_) => PetDetail(pet))),
+                            child: Text(
+                              pet.name,
+                              style: TextStyle(
+                                color: Colors.grey[800],
+                                fontWeight: FontWeight.bold,
+                                fontSize: 24,
+                              ),
                             ),
                           ),
                           SizedBox(
@@ -152,14 +183,14 @@ class PostDetail extends StatelessWidget {
                         width: 50,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: post.pet.favorite
+                          color: widget.post.pet.favorite
                               ? Colors.red[400]
                               : Colors.white,
                         ),
                         child: Icon(
                           Icons.favorite,
                           size: 24,
-                          color: post.pet.favorite
+                          color: widget.post.pet.favorite
                               ? Colors.white
                               : Colors.grey[300],
                         ),
@@ -319,5 +350,26 @@ class PostDetail extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildImage(int index) {
+    return Container(
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage(widget.post.imageUrls[index]),
+          fit: BoxFit.cover,
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(25),
+          bottomRight: Radius.circular(25),
+        ),
+      ),
+    );
+  }
+
+  void onPageChanged(int value) {
+    setState(() {
+      currentTabImage = value + 1;
+    });
   }
 }

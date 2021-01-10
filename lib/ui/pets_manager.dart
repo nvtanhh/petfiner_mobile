@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pet_finder/core/models/pet.dart';
-import 'package:pet_finder/ui/create_new_pet.dart';
+import 'package:pet_finder/ui/pest_indate.dart';
 import 'package:pet_finder/ui/widgets/pet_widget_small.dart';
 
 class PetsManager extends StatefulWidget {
@@ -16,15 +16,11 @@ class _PetsManagerState extends State<PetsManager> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // iconTheme: IconThemeData(
-        //   color: Colors.black, //change your color here
-        // ),
         automaticallyImplyLeading: true,
         title: Text(
           'Pet Management',
           // style: const TextStyle(color: Colors.black),
         ),
-        // backgroundColor: Colors.white,
       ),
       body: ListView(physics: BouncingScrollPhysics(), children: [
         ListView.builder(
@@ -33,7 +29,7 @@ class _PetsManagerState extends State<PetsManager> {
           padding: EdgeInsets.fromLTRB(16, 20, 16, 0),
           physics: NeverScrollableScrollPhysics(),
           itemBuilder: (context, index) => Container(
-            height: 120,
+            height: 130,
             margin: EdgeInsets.only(bottom: 15),
             child: PetWidget(
                 key: ObjectKey(_myPets[index]),
@@ -51,7 +47,7 @@ class _PetsManagerState extends State<PetsManager> {
     return GestureDetector(
       onTap: () {
         Navigator.push(context,
-            new MaterialPageRoute(builder: (context) => CreateNewPet()));
+            new MaterialPageRoute(builder: (context) => PetAddUpdate()));
       },
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,

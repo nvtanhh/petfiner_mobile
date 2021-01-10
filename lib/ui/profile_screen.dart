@@ -31,7 +31,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               padding: const EdgeInsets.only(left: 16, right: 16, top: 10),
               child: _buildProfileInfo(),
             ),
-            SizedBox(height: 10),
+            // SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.only(left: 16, right: 16, top: 10),
               child: _buildMyPetsWrapper(),
@@ -209,24 +209,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          child: Row(
-            children: [
-              Text(
-                'Pets',
-                style: Theme.of(context)
-                    .textTheme
-                    .subtitle1
-                    .copyWith(fontWeight: FontWeight.w500),
-              ),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: ((context) => PetsManager())));
-                  },
+        GestureDetector(
+          onTap: () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: ((context) => PetsManager())));
+          },
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Row(
+              children: [
+                Text(
+                  'Pets',
+                  style: Theme.of(context)
+                      .textTheme
+                      .subtitle1
+                      .copyWith(fontWeight: FontWeight.w500),
+                ),
+                Expanded(
                   child: Container(
                     margin: EdgeInsets.only(left: 10),
                     alignment: Alignment.centerLeft,
@@ -236,13 +235,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       color: Colors.grey,
                     ),
                   ),
-                ),
-              )
-            ],
+                )
+              ],
+            ),
           ),
-        ),
-        SizedBox(
-          height: 10,
         ),
         Container(
           height: 80,
