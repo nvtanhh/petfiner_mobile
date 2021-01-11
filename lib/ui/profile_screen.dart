@@ -7,6 +7,7 @@ import 'package:pet_finder/ui/edit_profile.dart';
 import 'package:pet_finder/ui/pets_manager.dart';
 import 'package:pet_finder/ui/widgets/pet_widget_small.dart';
 import 'package:pet_finder/ui/widgets/post_and_album_tabs.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatefulWidget {
   final User user;
@@ -273,10 +274,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _logout() {
+    _removeToken();
     Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) => LoginScreen(),
         ));
+  }
+
+  void _removeToken() async {
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    _prefs.remove('token');
   }
 }

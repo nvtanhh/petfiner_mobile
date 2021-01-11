@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_finder/app_them.dart';
-import 'package:pet_finder/ui/auth/login.dart';
+import 'package:pet_finder/ui/root_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
         textTheme: GoogleFonts.montserratTextTheme(),
       ),
       debugShowCheckedModeBanner: false,
-      home: LoginScreen(),
+      home: RootPage(),
       builder: EasyLoading.init(),
     );
   }

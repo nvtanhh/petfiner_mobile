@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -10,6 +12,8 @@ import 'package:pet_finder/ui/auth/widgets/rounded_input_field.dart';
 import 'package:pet_finder/ui/auth/widgets/rounded_password_field.dart';
 import 'package:pet_finder/ui/bottom_navigator.dart';
 import 'package:http/http.dart' as http;
+import 'package:pet_finder/utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   final String initEmail;
@@ -74,9 +78,22 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                 ),
                 RoundedPasswordField(
+                  validator: (val) {
+                    if (val.length == 0) return "Please enter password";
+                  },
                   onChanged: (value) {
                     _password = value;
                   },
+                ),
+                Container(
+                  width: size.width * 0.8,
+                  padding: EdgeInsets.only(top: 10, bottom: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      GestureDetector(child: Text('Forgot password')),
+                    ],
+                  ),
                 ),
                 RoundedButton(
                   text: "LOGIN",
@@ -127,52 +144,45 @@ class _LoginScreenState extends State<LoginScreen> {
     EasyLoading.show(status: 'Loading...');
 
     if (_email.isNotEmpty && _password.isNotEmpty) {
-      http.Response response = await http.post(
-        Apis.getLoginUrl,
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(
-            <String, String>{'email': _email, 'password': _password}),
-      );
-      print(response.statusCode);
-      if (response.statusCode == 200) {
-        var token = response.body;
-        if (token != null) {
-          await EasyLoading.dismiss();
-          print("TOKEN: " + token);
-          Navigator.pushReplacement(
-              context,
-              new MaterialPageRoute(
-                builder: (context) => MyNavigator(),
-              ));
-        } else {
-          await EasyLoading.dismiss();
-          EasyLoading.showToast("Login failed.");
+      try {
+        http.Response response = await http
+            .post(
+              Apis.getLoginUrl,
+              headers: <String, String>{
+                'Content-Type': 'application/json; charset=UTF-8',
+              },
+              body: jsonEncode(
+                  <String, String>{'email': _email, 'password': _password}),
+            )
+            .timeout(Duration(seconds: 4));
+        if (response.statusCode == 200) {
+          var token = response.body;
+          if (token != null) {
+            await EasyLoading.dismiss();
+            _saveToken(token);
+            Navigator.pushReplacement(
+                context,
+                new MaterialPageRoute(
+                  builder: (context) => MyNavigator(),
+                ));
+          }
         }
-      } else if (response.statusCode == 200) {
-        await EasyLoading.dismiss();
-        EasyLoading.showError('Error');
-      } else {}
+        if (response.statusCode == 404) {
+          showToast("Login failed.");
+        }
+      } on TimeoutException catch (e) {
+        showError(e.toString());
+      } on SocketException catch (e) {
+        showError(e.toString());
+      }
     } else {
-      await EasyLoading.dismiss();
-      EasyLoading.showToast("Please fill your email and password first.");
+      showToast("Please fill your email and password first.");
     }
+  }
 
-    //   dynamic result = await Apis.login(_email, _password);
-    //   if (result != null) {
-    //     await EasyLoading.dismiss();
-    //     print("user token " + result);
-    //     // navigateToHome(context);
-    //     Navigator.pushReplacement(
-    //         context, MaterialPageRoute(builder: (context) => MyNavigator()));
-    //   } else {
-    //     await EasyLoading.dismiss();
-    //     EasyLoading.showToast(result);
-    //   }
-    // } else {
-    //   EasyLoading.showToast("Email hoặc mật khẩu trống");
-    // }
+  void _saveToken(String token) async {
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    _prefs.setString('token', token);
   }
 }
 

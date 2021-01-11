@@ -4,14 +4,12 @@ import 'package:pet_finder/ui/auth/widgets/text_field_container.dart';
 
 class RoundedPasswordField extends StatefulWidget {
   final ValueChanged<String> onChanged;
-
+  final ValueChanged<String> validator;
   final String hintText;
 
-  const RoundedPasswordField({
-    Key key,
-    this.onChanged,
-    this.hintText = 'Password',
-  }) : super(key: key);
+  const RoundedPasswordField(
+      {Key key, this.onChanged, this.hintText = 'Password', this.validator})
+      : super(key: key);
 
   @override
   _RoundedPasswordFieldState createState() => _RoundedPasswordFieldState();
@@ -30,14 +28,7 @@ class _RoundedPasswordFieldState extends State<RoundedPasswordField> {
   Widget build(BuildContext context) {
     return TextFieldContainer(
       child: TextFormField(
-        // validator: (val) {
-        //   if (val.length == 0)
-        //     return "Please enter password";
-        //   else if (val.length <= 5)
-        //     return "Your password should be more then 6 char long";
-        //   else
-        //     return null;
-        // },
+        validator: widget.validator,
         obscureText: _obscureText,
         enableSuggestions: false,
         autocorrect: false,

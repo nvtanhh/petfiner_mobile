@@ -10,6 +10,8 @@ class RoundedInputField extends StatelessWidget {
 
   final String initValue;
 
+  final ValueChanged<String> validator;
+
   const RoundedInputField({
     Key key,
     this.hintText,
@@ -17,20 +19,14 @@ class RoundedInputField extends StatelessWidget {
     this.onChanged,
     this.autofocus = false,
     this.initValue = '',
+    this.validator,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return TextFieldContainer(
       child: TextFormField(
-        validator: (val) {
-          if (val.length == 0)
-            return "Please enter email";
-          else if (!isEmail(val))
-            return "Please enter valid email";
-          else
-            return null;
-        },
+        validator: validator,
         initialValue: this.initValue,
         autofocus: this.autofocus,
         onChanged: onChanged,

@@ -1,8 +1,17 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:pet_finder/core/apis.dart';
+import 'package:pet_finder/ui/auth/login.dart';
 import 'package:pet_finder/ui/auth/widgets/already_have_an_account_acheck.dart';
 import 'package:pet_finder/ui/auth/widgets/rounded_button.dart';
 import 'package:pet_finder/ui/auth/widgets/rounded_input_field.dart';
 import 'package:pet_finder/ui/auth/widgets/rounded_password_field.dart';
+import 'package:pet_finder/utils.dart';
+import 'package:http/http.dart' as http;
 
 class SignUpScreen extends StatefulWidget {
   @override
@@ -12,6 +21,7 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String _email;
+  String _name;
   String _password;
   String _rePassword;
 
@@ -42,26 +52,57 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 SizedBox(height: size.height * 0.03),
                 RoundedInputField(
+                  validator: (val) {
+                    if (val.length == 0)
+                      return "Please enter email";
+                    else if (!isEmail(val))
+                      return "Please enter valid email";
+                    else
+                      return null;
+                  },
                   // autofocus: true,
                   hintText: "Your Email",
                   onChanged: (value) {
                     _email = value;
                   },
                 ),
+                RoundedInputField(
+                  validator: (val) {
+                    if (val.length == 0) return "Please enter name";
+                  },
+                  // autofocus: true,
+                  hintText: "Username",
+                  onChanged: (value) {
+                    _name = value;
+                  },
+                ),
                 RoundedPasswordField(
+                  validator: (val) {
+                    if (val.length == 0) return "Please enter password";
+                    if (val.length < 6)
+                      return "Password must at least 6 characters";
+                  },
                   onChanged: (value) {
                     _password = value;
                   },
                 ),
                 RoundedPasswordField(
                   hintText: "Retype password",
+                  validator: (val) {
+                    if (val.length == 0) return "Please enter password";
+                    if (val != _rePassword) return "Password not match";
+                  },
                   onChanged: (value) {
                     _rePassword = value;
                   },
                 ),
                 RoundedButton(
                   text: "SIGNUP",
-                  press: _signUp,
+                  press: () {
+                    if (_formKey.currentState.validate()) {
+                      _signUp();
+                    }
+                  },
                 ),
                 SizedBox(height: size.height * 0.03),
                 AlreadyHaveAnAccountCheck(
@@ -78,7 +119,50 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  _signUp() {}
+  _signUp() async {
+    EasyLoading.show(status: 'Loading...');
+
+    if (_email.isNotEmpty && _password.isNotEmpty) {
+      try {
+        http.Response response = await http
+            .post(
+              Apis.getSignUpUrl,
+              headers: <String, String>{
+                'Content-Type': 'application/json; charset=UTF-8',
+              },
+              body: jsonEncode(<String, String>{
+                'Email': _email,
+                'UserName': _name,
+                'Password': _password
+              }),
+            )
+            .timeout(Duration(seconds: 4));
+        print(response.body.toString());
+        if (response.statusCode == 200) {
+          var data = response.body;
+          print(data);
+          // if (token != null) {
+          //   await EasyLoading.dismiss();
+          //   // _saveToken(token);
+          //   Navigator.pushReplacement(
+          //       context,
+          //       new MaterialPageRoute(
+          //         builder: (context) => LoginScreen(),
+          //       ));
+          // }
+        }
+        if (response.statusCode == 404) {
+          showToast("Register failed!");
+        }
+      } on TimeoutException catch (e) {
+        showError(e.toString());
+      } on SocketException catch (e) {
+        showError(e.toString());
+      }
+    } else {
+      showToast("Please fill your email and password first.");
+    }
+  }
 }
 
 class Background extends StatelessWidget {
