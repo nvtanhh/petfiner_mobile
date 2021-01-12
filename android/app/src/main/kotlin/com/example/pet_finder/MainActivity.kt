@@ -1,4 +1,4 @@
-package com.example.pet_finder
+package com.greentea.petfinder
 
 import io.flutter.embedding.android.FlutterActivity
 
