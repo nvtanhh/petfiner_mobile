@@ -37,7 +37,7 @@ List<Post> getPostList() {
       "2020-07-19",
       "California",
       "2.5",
-      Category.CAT,
+      PetCategory.CAT,
       "assets/images/cats/cat_1.jpg",
       true,
       true);
@@ -49,7 +49,7 @@ List<Post> getPostList() {
       "2020-07-19",
       "New Jersey",
       "1.2",
-      Category.CAT,
+      PetCategory.CAT,
       "assets/images/cats/cat_2.jpg",
       false,
       true);
@@ -61,7 +61,7 @@ List<Post> getPostList() {
       "2020-07-19",
       "Miami",
       "1.2",
-      Category.CAT,
+      PetCategory.CAT,
       "assets/images/cats/cat_3.jpg",
       false,
       true);
@@ -73,7 +73,7 @@ List<Post> getPostList() {
       "2020-07-19",
       "Chicago",
       "1.2",
-      Category.CAT,
+      PetCategory.CAT,
       "assets/images/cats/cat_4.jpg",
       true,
       true);
@@ -85,7 +85,7 @@ List<Post> getPostList() {
       "2020-07-19",
       "Washintong",
       "1.2",
-      Category.CAT,
+      PetCategory.CAT,
       "assets/images/cats/cat_5.jpg",
       false,
       true);

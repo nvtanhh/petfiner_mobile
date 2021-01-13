@@ -1,13 +1,14 @@
-enum Category { CAT, DOG, OTHER, HAMSTER }
+enum PetCategory { CAT, DOG, OTHER, HAMSTER }
 
 class Pet {
+  int id;
   String name;
   String bio;
   String gender;
   String birhday;
   String location;
   String distance;
-  Category category;
+  PetCategory category;
   String avatar;
   bool favorite;
   bool newest;
@@ -18,6 +19,72 @@ class Pet {
   Pet(this.name, this.bio, this.breed, this.gender, this.birhday, this.location,
       this.distance, this.category, this.avatar, this.favorite, this.newest,
       {this.color, this.weight});
+
+  Pet.fromJSON(Map<String, dynamic> json)
+      : id = json['id'],
+        name = json['name'],
+        bio = json['bio'],
+        gender = json['gender'],
+        birhday = json['birhday'],
+        location = json['location'],
+        category = getPetCategory(json['category'] as String),
+        avatar = json['avatar'],
+        breed = json['breed'],
+        color = json['color'],
+        weight = json['weight'];
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'bio': bio,
+      'gender': gender,
+      'birhday': birhday,
+      'location': location,
+      'category': categoryToString(category),
+      'avatar': avatar,
+      'breed': breed,
+      'color': color,
+      'weight': weight,
+    };
+  }
+
+  static PetCategory getPetCategory(String category) {
+    switch (category.toLowerCase()) {
+      case 'dog':
+        return PetCategory.DOG;
+        break;
+      case 'cat':
+        return PetCategory.CAT;
+        break;
+      case 'hamster':
+        return PetCategory.HAMSTER;
+        break;
+      case 'other':
+        return PetCategory.OTHER;
+        break;
+      default:
+        return PetCategory.OTHER;
+    }
+  }
+
+  String categoryToString(PetCategory category) {
+    switch (category) {
+      case PetCategory.DOG:
+        return 'Dog';
+        break;
+      case PetCategory.CAT:
+        return 'Cat';
+        break;
+      case PetCategory.OTHER:
+        return 'Other';
+        break;
+      case PetCategory.HAMSTER:
+        return 'Hamster';
+        break;
+    }
+    return null;
+  }
 }
 
 List<Pet> getPetList() {
@@ -30,7 +97,7 @@ List<Pet> getPetList() {
         "2020-07-19",
         "California",
         "2.5",
-        Category.CAT,
+        PetCategory.CAT,
         "assets/images/cats/cat_1.jpg",
         true,
         true),
@@ -42,14 +109,14 @@ List<Pet> getPetList() {
         "2020-07-19",
         "New Jersey",
         "1.2",
-        Category.CAT,
+        PetCategory.CAT,
         "assets/images/cats/cat_2.jpg",
         false,
         true),
     Pet("Ragdoll", "Just a pet's bio", "Alaska", "male", "2020-07-19", "Miami",
-        "1.2", Category.CAT, "assets/images/cats/cat_3.jpg", false, true),
+        "1.2", PetCategory.CAT, "assets/images/cats/cat_3.jpg", false, true),
     Pet("Burmés", "Just a pet's bio", "Alaska", "male", "2020-07-19", "Chicago",
-        "1.2", Category.CAT, "assets/images/cats/cat_4.jpg", true, true),
+        "1.2", PetCategory.CAT, "assets/images/cats/cat_4.jpg", true, true),
     Pet(
         "American Shorthair",
         "Just a pet's bio",
@@ -58,7 +125,7 @@ List<Pet> getPetList() {
         "2020-07-19",
         "Washintong",
         "1.2",
-        Category.CAT,
+        PetCategory.CAT,
         "assets/images/cats/cat_5.jpg",
         false,
         true),
@@ -70,7 +137,7 @@ List<Pet> getPetList() {
         "2020-07-19",
         "New York",
         "1.9",
-        Category.CAT,
+        PetCategory.CAT,
         "assets/images/cats/cat_6.jpg",
         false,
         true),
@@ -82,7 +149,7 @@ List<Pet> getPetList() {
         "2020-07-19",
         "California",
         "2.5",
-        Category.CAT,
+        PetCategory.CAT,
         "assets/images/cats/cat_7.jpg",
         false,
         true),
@@ -94,7 +161,7 @@ List<Pet> getPetList() {
         "2020-07-19",
         "New Jersey",
         "1.2",
-        Category.CAT,
+        PetCategory.CAT,
         "assets/images/cats/cat_8.jpg",
         false,
         true),

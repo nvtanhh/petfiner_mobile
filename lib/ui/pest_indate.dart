@@ -29,7 +29,7 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
   List<String> _genders = ['Male', 'Female'];
   _PetAddUpdateState(this.pet);
 
-  Category petCategory;
+  PetCategory petCategory;
 
   final picker = ImagePicker();
   File imageFile;
@@ -353,15 +353,15 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildPetCategory(Category.DOG, Colors.red[200]),
-        _buildPetCategory(Category.CAT, Colors.blue[200]),
-        _buildPetCategory(Category.HAMSTER, Colors.orange[200]),
-        _buildPetCategory(Category.OTHER, Colors.green[200]),
+        _buildPetCategory(PetCategory.DOG, Colors.red[200]),
+        _buildPetCategory(PetCategory.CAT, Colors.blue[200]),
+        _buildPetCategory(PetCategory.HAMSTER, Colors.orange[200]),
+        _buildPetCategory(PetCategory.OTHER, Colors.green[200]),
       ],
     );
   }
 
-  Widget _buildPetCategory(Category category, Color color) {
+  Widget _buildPetCategory(PetCategory category, Color color) {
     return Expanded(
       child: Opacity(
         opacity: category == petCategory ? 1 : .3,
@@ -387,11 +387,11 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
                   child: Center(
                     child: Image.asset(
                       "assets/images/" +
-                          (category == Category.HAMSTER
+                          (category == PetCategory.HAMSTER
                               ? "hamster"
-                              : category == Category.CAT
+                              : category == PetCategory.CAT
                                   ? "cat"
-                                  : category == Category.OTHER
+                                  : category == PetCategory.OTHER
                                       ? "bunny"
                                       : "dog") +
                           ".png",
@@ -404,11 +404,11 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
                 ),
                 Flexible(
                   child: Text(
-                    category == Category.HAMSTER
+                    category == PetCategory.HAMSTER
                         ? "Hamsters"
-                        : category == Category.CAT
+                        : category == PetCategory.CAT
                             ? "Cats"
-                            : category == Category.OTHER
+                            : category == PetCategory.OTHER
                                 ? "Others"
                                 : "Dogs",
                     overflow: TextOverflow.ellipsis,

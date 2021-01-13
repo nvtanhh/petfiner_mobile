@@ -118,16 +118,17 @@ class _SearchScreenState extends State<SearchScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    buildPetCategory(Category.DOG, "340", Colors.red[200]),
-                    buildPetCategory(Category.CAT, "210", Colors.blue[200]),
+                    buildPetCategory(PetCategory.DOG, "340", Colors.red[200]),
+                    buildPetCategory(PetCategory.CAT, "210", Colors.blue[200]),
                   ],
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     buildPetCategory(
-                        Category.HAMSTER, "56", Colors.orange[200]),
-                    buildPetCategory(Category.OTHER, "90", Colors.green[200]),
+                        PetCategory.HAMSTER, "56", Colors.orange[200]),
+                    buildPetCategory(
+                        PetCategory.OTHER, "90", Colors.green[200]),
                   ],
                 ),
               ],
@@ -170,7 +171,7 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget buildPetCategory(Category category, String total, Color color) {
+  Widget buildPetCategory(PetCategory category, String total, Color color) {
     return Expanded(
       child: GestureDetector(
         onTap: () {
@@ -207,11 +208,11 @@ class _SearchScreenState extends State<SearchScreen> {
                 child: Center(
                   child: Image.asset(
                     "assets/images/" +
-                        (category == Category.HAMSTER
+                        (category == PetCategory.HAMSTER
                             ? "hamster"
-                            : category == Category.CAT
+                            : category == PetCategory.CAT
                                 ? "cat"
-                                : category == Category.OTHER
+                                : category == PetCategory.OTHER
                                     ? "bunny"
                                     : "dog") +
                         ".png",
@@ -229,11 +230,11 @@ class _SearchScreenState extends State<SearchScreen> {
                   children: [
                     Flexible(
                       child: Text(
-                        category == Category.HAMSTER
+                        category == PetCategory.HAMSTER
                             ? "Hamsters"
-                            : category == Category.CAT
+                            : category == PetCategory.CAT
                                 ? "Cats"
-                                : category == Category.OTHER
+                                : category == PetCategory.OTHER
                                     ? "Others"
                                     : "Dogs",
                         overflow: TextOverflow.ellipsis,

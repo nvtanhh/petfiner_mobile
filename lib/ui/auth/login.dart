@@ -173,11 +173,9 @@ class _LoginScreenState extends State<LoginScreen> {
             print("TOKEN: " + token);
             await EasyLoading.dismiss();
             _saveToken(token);
-            Navigator.pushReplacement(
-                context,
-                new MaterialPageRoute(
-                  builder: (context) => MyNavigator(),
-                ));
+
+            Navigator.pushReplacement(context,
+                new MaterialPageRoute(builder: (context) => MyNavigator()));
           }
         }
         if (response.statusCode == 404) {

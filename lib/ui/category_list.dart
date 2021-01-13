@@ -4,7 +4,7 @@ import 'package:pet_finder/core/models/pet.dart';
 import 'package:pet_finder/ui/widgets/post_widget.dart';
 
 class CategoryList extends StatelessWidget {
-  final Category category;
+  final PetCategory category;
 
   CategoryList({@required this.category});
 
@@ -18,11 +18,11 @@ class CategoryList extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          (category == Category.HAMSTER
+          (category == PetCategory.HAMSTER
                   ? "Hamster"
-                  : category == Category.CAT
+                  : category == PetCategory.CAT
                       ? "Cat"
-                      : category == Category.OTHER
+                      : category == PetCategory.OTHER
                           ? "Bunny"
                           : "Dog") +
               " Category",
