@@ -136,23 +136,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 'Password': _password
               }),
             )
-            .timeout(Duration(seconds: 4));
+            .timeout(Duration(seconds: 10));
         print(response.body.toString());
         if (response.statusCode == 200) {
           var data = response.body;
           print(data);
-          // if (token != null) {
-          //   await EasyLoading.dismiss();
-          //   // _saveToken(token);
-          //   Navigator.pushReplacement(
-          //       context,
-          //       new MaterialPageRoute(
-          //         builder: (context) => LoginScreen(),
-          //       ));
-          // }
+
+          Navigator.pushReplacement(
+              context,
+              new MaterialPageRoute(
+                  builder: (context) => LoginScreen(initEmail: _email)));
         }
-        if (response.statusCode == 404) {
-          showToast("Register failed!");
+        if (response.statusCode == 409) {
+          showToast("Email is already exists!");
         }
       } on TimeoutException catch (e) {
         showError(e.toString());

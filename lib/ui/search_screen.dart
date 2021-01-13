@@ -155,7 +155,7 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
           Container(
             // padding: EdgeInsets.symmetric(horizontal: 16),
-            height: 120,
+            height: 130,
             child: ListView.builder(
               shrinkWrap: true,
               physics: BouncingScrollPhysics(),

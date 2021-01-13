@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:pet_finder/core/apis.dart';
+import 'package:pet_finder/ui/auth/forgot_pass.dart';
 import 'package:pet_finder/ui/auth/signup.dart';
 import 'package:pet_finder/ui/auth/widgets/already_have_an_account_acheck.dart';
 import 'package:pet_finder/ui/auth/widgets/rounded_button.dart';
@@ -18,9 +19,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 class LoginScreen extends StatefulWidget {
   final String initEmail;
 
+  final String mess;
+
   const LoginScreen({
     Key key,
-    this.initEmail = '',
+    this.initEmail,
+    this.mess,
   }) : super(key: key);
 
   @override
@@ -39,7 +43,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void initState() {
-    _email = widget.initEmail;
+    if (widget.mess != null) showToast(widget.mess);
+    _email = widget.initEmail ?? '';
     _password = '';
     super.initState();
   }
@@ -87,11 +92,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 Container(
                   width: size.width * 0.8,
-                  padding: EdgeInsets.only(top: 10, bottom: 20),
+                  padding: EdgeInsets.only(top: 10, bottom: 15),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      GestureDetector(child: Text('Forgot password')),
+                      GestureDetector(
+                          onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ForgotPassScreen())),
+                          child: Text('Forgot password?')),
                     ],
                   ),
                 ),
@@ -142,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _login() async {
     EasyLoading.show(status: 'Loading...');
-
+    print('login url :' + Apis.getLoginUrl);
     if (_email.isNotEmpty && _password.isNotEmpty) {
       try {
         http.Response response = await http
@@ -151,13 +161,16 @@ class _LoginScreenState extends State<LoginScreen> {
               headers: <String, String>{
                 'Content-Type': 'application/json; charset=UTF-8',
               },
-              body: jsonEncode(
-                  <String, String>{'email': _email, 'password': _password}),
+              body: jsonEncode(<String, String>{
+                'email': _email.trim(),
+                'password': _password.trim()
+              }),
             )
-            .timeout(Duration(seconds: 4));
+            .timeout(Duration(seconds: 10));
         if (response.statusCode == 200) {
-          var token = response.body;
+          var token = jsonDecode(response.body)["token"];
           if (token != null) {
+            print("TOKEN: " + token);
             await EasyLoading.dismiss();
             _saveToken(token);
             Navigator.pushReplacement(
@@ -174,6 +187,7 @@ class _LoginScreenState extends State<LoginScreen> {
         showError(e.toString());
       } on SocketException catch (e) {
         showError(e.toString());
+        print(e.toString());
       }
     } else {
       showToast("Please fill your email and password first.");
