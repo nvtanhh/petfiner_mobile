@@ -1,7 +1,7 @@
 enum PetCategory { CAT, DOG, OTHER, HAMSTER }
 
 class Pet {
-  int id;
+  String id;
   String name;
   String bio;
   String gender;
@@ -35,7 +35,7 @@ class Pet {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      'id': id.toString(),
       'name': name,
       'bio': bio,
       'gender': gender,

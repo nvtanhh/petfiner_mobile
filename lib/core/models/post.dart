@@ -1,31 +1,50 @@
 import 'package:pet_finder/core/models/pet.dart';
 import 'package:flutter/material.dart';
+import 'package:pet_finder/core/models/user.dart';
 
-enum Condition { Adoption, Disappear, Mating }
+enum PostCategory { Adoption, Disappear, Mating }
 
 class Post {
-  int like, comment;
+  String id;
+  String content;
   Pet pet;
-  Condition condition;
+  PostCategory postCategory;
   List<String> imageUrls;
+  bool isFavorite;
+  User creator;
+
   Post(
-      {@required this.pet,
+      {this.id,
+      @required this.pet,
       @required this.imageUrls,
-      @required this.condition,
-      this.like,
-      this.comment});
+      @required this.postCategory,
+      @required this.content,
+      @required this.isFavorite,
+      this.creator});
 
   String conditionText() {
-    switch (this.condition) {
-      case Condition.Adoption:
+    switch (this.postCategory) {
+      case PostCategory.Adoption:
         return "Adoption";
-      case Condition.Mating:
+      case PostCategory.Mating:
         return "Mating";
-      case Condition.Disappear:
+      case PostCategory.Disappear:
         return "Disappear";
     }
     return "";
   }
+
+  Post.fromJSON(Map<String, dynamic> json)
+      : id = json['id'],
+        content = json['content'],
+        postCategory = getPostCategory(json['post_category'] as String),
+        imageUrls = (json['id'] as List),
+        isFavorite = json['is_favorite'] == 'true' ? true : false,
+        creator = User.fromJson(json['creator']);
+
+  toJson() {}
+
+  static getPostCategory(String json) {}
 }
 
 List<Post> getPostList() {
@@ -98,7 +117,7 @@ List<Post> getPostList() {
           'assets/images/cats/cat_2.jpg',
           'assets/images/cats/cat_3.jpg'
         ],
-        condition: Condition.Adoption),
+        postCategory: PostCategory.Adoption),
     Post(
         pet: p2,
         imageUrls: [
@@ -106,7 +125,7 @@ List<Post> getPostList() {
           'assets/images/cats/cat_8.jpg',
           'assets/images/cats/cat_9.jpg'
         ],
-        condition: Condition.Disappear),
+        postCategory: PostCategory.Disappear),
     Post(
         pet: p3,
         imageUrls: [
@@ -114,7 +133,7 @@ List<Post> getPostList() {
           'assets/images/hamsters/hamster_2.jpg',
           'assets/images/hamsters/hamster_3.jpg'
         ],
-        condition: Condition.Mating),
+        postCategory: PostCategory.Mating),
     Post(
         pet: p4,
         imageUrls: [
@@ -122,7 +141,7 @@ List<Post> getPostList() {
           'assets/images/bunnies/bunny_2.jpg',
           'assets/images/bunnies/bunny_3.jpg'
         ],
-        condition: Condition.Adoption),
+        postCategory: PostCategory.Adoption),
     Post(
         pet: p5,
         imageUrls: [
@@ -130,6 +149,6 @@ List<Post> getPostList() {
           'assets/images/cats/dog_1.jpg',
           'assets/images/cats/dog_1.jpg'
         ],
-        condition: Condition.Disappear),
+        postCategory: PostCategory.Disappear),
   ];
 }

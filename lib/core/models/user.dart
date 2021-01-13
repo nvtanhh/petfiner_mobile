@@ -1,12 +1,16 @@
 import 'package:pet_finder/core/models/pet.dart';
-import 'package:pet_finder/core/models/users_list.dart';
+import 'package:pet_finder/core/models/post.dart';
+import 'package:pet_finder/core/models/posts_list.dart';
+import 'package:pet_finder/core/models/pets_list.dart';
 
 class User {
   String id, name, email, bio, phoneNumber, avatar;
 
   PetsList petList;
+
+  PostsList postList;
   User(this.id, this.name, this.bio, this.phoneNumber, this.avatar,
-      this.petList);
+      this.petList, this.postList);
 
   User.empty() {
     this.id = '';
@@ -25,6 +29,12 @@ class User {
         'bio': bio,
         'phone_number': phoneNumber,
         'avatar': avatar,
-        'pets': petList?.pets?.map((Pet pet) => pet.toJson())?.toList()
+        'pets': petList?.pets?.map((Pet pet) => pet.toJson())?.toList(),
+        'posts': postList?.posts?.map((Post post) => post.toJson())?.toList()
       };
+
+  User.fromJson(Map<String, dynamic> json)
+      : id = json['id'],
+        name = json['name'],
+        avatar = json['avatar'];
 }

@@ -97,9 +97,9 @@ class PostWidget extends StatelessWidget {
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      color: post.condition == Condition.Adoption
+                      color: post.postCategory == PostCategory.Adoption
                           ? Colors.orange[100]
-                          : post.condition == Condition.Disappear
+                          : post.postCategory == PostCategory.Disappear
                               ? Colors.red[100]
                               : Colors.blue[100],
                       borderRadius: BorderRadius.all(
@@ -110,9 +110,9 @@ class PostWidget extends StatelessWidget {
                     child: Text(
                       post.conditionText(),
                       style: TextStyle(
-                        color: post.condition == Condition.Adoption
+                        color: post.postCategory == PostCategory.Adoption
                             ? Colors.orange
-                            : post.condition == Condition.Disappear
+                            : post.postCategory == PostCategory.Disappear
                                 ? Colors.red
                                 : Colors.blue,
                         fontWeight: FontWeight.bold,
