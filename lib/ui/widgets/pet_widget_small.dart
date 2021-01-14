@@ -1,5 +1,7 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:pet_finder/core/apis.dart';
 import 'package:pet_finder/core/models/pet.dart';
 import 'package:pet_finder/ui/pet_detail.dart';
 import 'package:pet_finder/utils.dart' as utils;
@@ -11,12 +13,15 @@ class PetWidget extends StatelessWidget {
   final bool showAsColumn;
 
   final bool isExpanded;
+
+  final bool tiny;
   const PetWidget(
       {Key key,
       this.pet,
       this.last = false,
       this.showAsColumn = false,
-      this.isExpanded})
+      this.isExpanded,
+      this.tiny = false})
       : super(key: key);
 
   @override
@@ -61,8 +66,16 @@ class PetWidget extends StatelessWidget {
         child: Row(
           children: [
             CircleAvatar(
-              backgroundImage: AssetImage(pet.avatar),
-              radius: showAsColumn ? 40 : 25,
+              backgroundImage: pet?.avatar == null
+                  ? AssetImage('assets/sample/animal.jpg')
+                  : CachedNetworkImageProvider(
+                      Apis.avatarDirUrl + pet.avatar,
+                    ),
+              radius: showAsColumn
+                  ? 40
+                  : tiny
+                      ? 20
+                      : 25,
             ),
             SizedBox(
               width: 12,
@@ -81,7 +94,11 @@ class PetWidget extends StatelessWidget {
                           maxLines: 1,
                           style: TextStyle(
                             color: Colors.grey[800],
-                            fontSize: showAsColumn ? 18 : 14,
+                            fontSize: showAsColumn
+                                ? 18
+                                : tiny
+                                    ? 12
+                                    : 14,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -105,7 +122,7 @@ class PetWidget extends StatelessWidget {
                     ],
                   ),
                   SizedBox(
-                    height: 6,
+                    height: tiny ? 0 : 6,
                   ),
                   Text(
                     "Alaska",
@@ -130,7 +147,9 @@ class PetWidget extends StatelessWidget {
                           width: 6,
                         ),
                         Text(
-                          utils.getDaysAgo(pet.birhday) + " days",
+                          pet.age != null
+                              ? pet.age.toString() + " months"
+                              : 'Uknow age',
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: Colors.grey[700],

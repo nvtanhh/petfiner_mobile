@@ -172,7 +172,7 @@ class _LoginScreenState extends State<LoginScreen> {
           if (token != null) {
             print("TOKEN: " + token);
             await EasyLoading.dismiss();
-            _saveToken(token);
+            await _saveToken(token);
 
             Navigator.pushReplacement(context,
                 new MaterialPageRoute(builder: (context) => MyNavigator()));
@@ -192,9 +192,9 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _saveToken(String token) async {
+  Future<void> _saveToken(String token) async {
     SharedPreferences _prefs = await SharedPreferences.getInstance();
-    _prefs.setString('token', token);
+    await _prefs.setString('token', token);
   }
 }
 

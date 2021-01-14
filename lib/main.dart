@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_finder/app_them.dart';
-import 'package:pet_finder/ui/auth/forgot_pass.dart';
-import 'package:pet_finder/ui/root_page.dart';
+import 'package:pet_finder/ui/bottom_navigator.dart';
 
 void main() {
   runApp(MyApp());
@@ -21,7 +20,7 @@ class MyApp extends StatelessWidget {
         textTheme: GoogleFonts.montserratTextTheme(),
       ),
       debugShowCheckedModeBanner: false,
-      home: ForgotPassScreen(),
+      home: MyNavigator(),
       builder: EasyLoading.init(),
     );
   }

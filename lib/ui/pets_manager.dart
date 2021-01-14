@@ -4,14 +4,14 @@ import 'package:pet_finder/ui/pest_indate.dart';
 import 'package:pet_finder/ui/widgets/pet_widget_small.dart';
 
 class PetsManager extends StatefulWidget {
-  PetsManager({Key key}) : super(key: key);
+  List<Pet> pets;
+  PetsManager(this.pets, {Key key}) : super(key: key);
 
   @override
   _PetsManagerState createState() => _PetsManagerState();
 }
 
 class _PetsManagerState extends State<PetsManager> {
-  List<Pet> _myPets = getPetList().sublist(0, 3);
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,21 +19,20 @@ class _PetsManagerState extends State<PetsManager> {
         automaticallyImplyLeading: true,
         title: Text(
           'Pet Management',
-          // style: const TextStyle(color: Colors.black),
         ),
       ),
       body: ListView(physics: BouncingScrollPhysics(), children: [
         ListView.builder(
           shrinkWrap: true,
-          itemCount: _myPets.length,
+          itemCount: widget.pets.length,
           padding: EdgeInsets.fromLTRB(16, 20, 16, 0),
           physics: NeverScrollableScrollPhysics(),
           itemBuilder: (context, index) => Container(
             height: 130,
             margin: EdgeInsets.only(bottom: 15),
             child: PetWidget(
-                key: ObjectKey(_myPets[index]),
-                pet: _myPets[index],
+                key: ObjectKey(widget.pets[index]),
+                pet: widget.pets[index],
                 showAsColumn: true),
           ),
         ),

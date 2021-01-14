@@ -1,13 +1,18 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:pet_finder/core/apis.dart';
 import 'package:pet_finder/core/models/pet.dart';
 import 'package:pet_finder/core/models/post.dart';
+import 'package:pet_finder/ui/profile_screen.dart';
 import 'package:pet_finder/ui/widgets/user_avatar.dart';
 import 'package:pet_finder/ui/pet_detail.dart';
 
 class PostDetail extends StatefulWidget {
   final Post post;
 
-  PostDetail({this.post});
+  final String from;
+
+  PostDetail(this.post, {this.from});
 
   @override
   _PostDetailState createState() => _PostDetailState();
@@ -15,10 +20,16 @@ class PostDetail extends StatefulWidget {
 
 class _PostDetailState extends State<PostDetail> {
   int currentTabImage = 1;
+  final String _defaultPostImage = 'assets/images/sample/post.jpg';
 
   @override
   Widget build(BuildContext context) {
     Pet pet = widget.post.pet;
+    String tagPrefix = widget.from == 'grid'
+        ? 'grid_'
+        : widget.from == 'card'
+            ? 'card_'
+            : '';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -52,38 +63,44 @@ class _PostDetailState extends State<PostDetail> {
           Expanded(
             child: Stack(
               children: [
-                PageView.builder(
-                  onPageChanged: onPageChanged,
-                  itemCount: widget.post.imageUrls.length,
-                  itemBuilder: (context, index) => index == 0
-                      ? Hero(
-                          tag: widget.post.imageUrls[index],
-                          child: _buildImage(index),
-                        )
-                      : _buildImage(index),
-                ),
-                Align(
-                  alignment: Alignment.bottomRight,
-                  child: Container(
-                    margin: EdgeInsets.only(bottom: 15, right: 15),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300].withOpacity(.6),
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(10),
+                widget.post.imageUrls.isNotEmpty
+                    ? PageView.builder(
+                        onPageChanged: onPageChanged,
+                        itemCount: widget.post.imageUrls.length,
+                        itemBuilder: (context, index) => index == 0
+                            ? Hero(
+                                tag: tagPrefix + widget.post.imageUrls[index],
+                                child: _buildImage(index: index),
+                              )
+                            : _buildImage(index: index),
+                      )
+                    : Hero(
+                        tag: tagPrefix + 'iamgeUrl' + widget.post.id.toString(),
+                        child: _buildImage(),
                       ),
-                    ),
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    child: Text(
-                      currentTabImage.toString() +
-                          " / " +
-                          widget.post.imageUrls.length.toString(),
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
+                if (widget.post.imageUrls.isNotEmpty)
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: Container(
+                      margin: EdgeInsets.only(bottom: 15, right: 15),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300].withOpacity(.6),
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(10),
+                        ),
+                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      child: Text(
+                        currentTabImage.toString() +
+                            " / " +
+                            widget.post.imageUrls.length.toString(),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
                   ),
-                ),
                 Align(
                   alignment: Alignment.bottomLeft,
                   child: Container(
@@ -157,7 +174,9 @@ class _PostDetailState extends State<PostDetail> {
                                 width: 4,
                               ),
                               Text(
-                                pet.location,
+                                pet.address != null
+                                    ? pet.address.address ?? 'Unknow'
+                                    : 'Unknow',
                                 style: TextStyle(
                                   color: Colors.grey[600],
                                   fontSize: 14,
@@ -167,7 +186,9 @@ class _PostDetailState extends State<PostDetail> {
                                 width: 4,
                               ),
                               Text(
-                                "(" + pet.distance + "km)",
+                                pet.distance != null
+                                    ? "(" + pet.distance.toString() + " km)"
+                                    : '',
                                 style: TextStyle(
                                   color: Colors.grey[600],
                                   fontSize: 14,
@@ -183,14 +204,14 @@ class _PostDetailState extends State<PostDetail> {
                         width: 50,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: widget.post.pet.favorite
+                          color: widget.post.isFavorite
                               ? Colors.red[400]
                               : Colors.white,
                         ),
                         child: Icon(
                           Icons.favorite,
                           size: 24,
-                          color: widget.post.pet.favorite
+                          color: widget.post.isFavorite
                               ? Colors.white
                               : Colors.grey[300],
                         ),
@@ -202,16 +223,26 @@ class _PostDetailState extends State<PostDetail> {
                   padding: EdgeInsets.all(8),
                   child: Row(
                     children: [
-                      buildPetFeature("4 months", "Age"),
-                      buildPetFeature("Grey", "Color"),
-                      buildPetFeature("11 Kg", "Weight"),
+                      buildPetFeature(
+                          pet.age != null
+                              ? pet.age.toString()
+                              : 'Uknow' + " months",
+                          "Months"),
+                      buildPetFeature(
+                          pet.color != null ? pet.color.toString() : 'Uknow',
+                          "Color"),
+                      buildPetFeature(
+                          pet.weight != null
+                              ? pet.weight.toString() + ' Kg'
+                              : 'Uknow',
+                          "Weight"),
                     ],
                   ),
                 ),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
-                    "Pet Story",
+                    "Content",
                     style: TextStyle(
                       color: Colors.grey[800],
                       fontWeight: FontWeight.bold,
@@ -225,7 +256,7 @@ class _PostDetailState extends State<PostDetail> {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
-                    "Maine Coon cats are known for their intelligence and playfulness, as well as their size. One of the largest breeds of domestic cats, they are lovingly referreds.",
+                    widget.post.content ?? '',
                     style: TextStyle(
                       color: Colors.grey[600],
                       fontSize: 14,
@@ -241,36 +272,53 @@ class _PostDetailState extends State<PostDetail> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          UserAvatar(),
-                          SizedBox(
-                            width: 12,
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Posted by",
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      ProfileScreen(user: pet?.owner)));
+                        },
+                        child: Row(
+                          children: [
+                            // UserAvatar(pet?.owner?.avatar ?? ''),
+                            CircleAvatar(
+                              backgroundColor: Colors.blue[200],
+                              radius: 30,
+                              backgroundImage: pet.owner.avatar == null
+                                  ? AssetImage('assets/images/user_avatar.jpg')
+                                  : CachedNetworkImageProvider(
+                                      Apis.avatarDirUrl + pet.owner.avatar),
+                            ),
+                            SizedBox(
+                              width: 12,
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Posted by",
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                              SizedBox(
-                                height: 4,
-                              ),
-                              Text(
-                                "Nannie Barker",
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 14,
+                                SizedBox(
+                                  height: 4,
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
+                                Text(
+                                  pet?.owner?.name ?? 'Unknow',
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                       Container(
                         padding:
@@ -352,11 +400,17 @@ class _PostDetailState extends State<PostDetail> {
     );
   }
 
-  Widget _buildImage(int index) {
+  Widget _buildImage({int index}) {
+    String imageUrl = index == null
+        ? _defaultPostImage
+        : Apis.baseUrlOnline + widget.post.imageUrls[index];
     return Container(
       decoration: BoxDecoration(
         image: DecorationImage(
-          image: AssetImage(widget.post.imageUrls[index]),
+          image: (widget.post.imageUrls == null &&
+                  widget.post.imageUrls.length == 0)
+              ? AssetImage(_defaultPostImage)
+              : CachedNetworkImageProvider(imageUrl),
           fit: BoxFit.cover,
         ),
         borderRadius: BorderRadius.only(

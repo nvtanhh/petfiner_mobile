@@ -4,20 +4,26 @@ import 'package:pet_finder/core/models/posts_list.dart';
 import 'package:pet_finder/core/models/pets_list.dart';
 
 class User {
-  String id, name, email, bio, phoneNumber, avatar;
+  int id;
+  String name, email, bio, phone, avatar;
 
   PetsList petList;
 
   PostsList postList;
-  User(this.id, this.name, this.bio, this.phoneNumber, this.avatar,
-      this.petList, this.postList);
+  User(this.id, this.name, this.bio, this.phone, this.avatar, this.petList,
+      this.postList);
+
+  @override
+  String toString() {
+    return 'name: $name, avatar: $avatar';
+  }
 
   User.empty() {
-    this.id = '';
+    this.id = -1;
     this.name = 'Empty User';
     this.email = '';
     this.bio = '';
-    this.phoneNumber = '';
+    this.phone = '';
     this.avatar = 'assets/images/sample/avt.jpg';
     this.petList = new PetsList();
   }
@@ -27,14 +33,16 @@ class User {
         'name': name,
         'email': email,
         'bio': bio,
-        'phone_number': phoneNumber,
+        'phone_number': phone,
         'avatar': avatar,
         'pets': petList?.pets?.map((Pet pet) => pet.toJson())?.toList(),
         'posts': postList?.posts?.map((Post post) => post.toJson())?.toList()
       };
 
   User.fromJson(Map<String, dynamic> json)
-      : id = json['id'],
-        name = json['name'],
-        avatar = json['avatar'];
+      : id = json['UserId'],
+        email = json['Email'],
+        name = json['UserName'],
+        phone = json['Phone'],
+        avatar = json['Avatar'];
 }

@@ -8,6 +8,7 @@ import 'package:pet_finder/core/models/pet.dart';
 import 'package:pet_finder/core/models/post.dart';
 
 class SearchScreen extends StatefulWidget {
+  SearchScreen({Key key}) : super(key: key);
   @override
   _SearchScreenState createState() => _SearchScreenState();
 }

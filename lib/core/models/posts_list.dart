@@ -7,7 +7,7 @@ class PostsList {
 
   factory PostsList.fromJson(List<dynamic> parsedJson) {
     List<Post> pets =
-        parsedJson.map((circleJson) => Post.fromJSON(circleJson)).toList();
+        parsedJson.map((circleJson) => Post.fromJson(circleJson)).toList();
 
     return new PostsList(posts: pets);
   }

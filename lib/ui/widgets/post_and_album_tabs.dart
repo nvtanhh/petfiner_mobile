@@ -1,21 +1,78 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:pet_finder/core/apis.dart';
 import 'package:pet_finder/core/models/pet.dart';
 import 'package:pet_finder/core/models/post.dart';
+import 'package:pet_finder/core/models/posts_list.dart';
 import 'package:pet_finder/ui/post_detail.dart';
 import 'package:pet_finder/ui/widgets/post_widget.dart';
+import 'package:http/http.dart' as http;
+import 'package:pet_finder/utils.dart';
 
 class PostAndAblumWrapper extends StatefulWidget {
-  PostAndAblumWrapper({Key key}) : super(key: key);
+  List<Post> posts;
+  bool postError;
+
+  PostAndAblumWrapper({Key key, this.posts, this.postError}) : super(key: key);
 
   @override
   _PostAndAblumWrapperState createState() => _PostAndAblumWrapperState();
 }
 
 class _PostAndAblumWrapperState extends State<PostAndAblumWrapper> {
-  List<Post> posts = getPostList();
   Color _gridColor = Colors.blue;
   Color _listColor = Colors.grey;
   bool _isGridActive = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMyPosts();
+  }
+
+  void _loadMyPosts() async {
+    String token = await getStringValue('token');
+    try {
+      http.Response response = await http.get(
+        Apis.getMyPosts,
+        headers: {
+          HttpHeaders.contentTypeHeader: 'application/json',
+          HttpHeaders.authorizationHeader: 'Bearer $token',
+        },
+      ).timeout(Duration(seconds: 30));
+      print('_loadMyPosts: ' + response.statusCode.toString());
+      if (response.statusCode == 200) {
+        var parsedJson = jsonDecode(response.body);
+        setState(() {
+          widget.posts = PostsList.fromJson(parsedJson).posts;
+        });
+      } else if (response.statusCode == 500) {
+        showError('Server error, please try again latter.');
+        setState(() {
+          widget.postError = true;
+        });
+      } else {
+        setState(() {
+          widget.postError = true;
+        });
+      }
+    } on TimeoutException catch (e) {
+      setState(() {
+        widget.postError = true;
+      });
+      showError(e.toString());
+    } on SocketException catch (e) {
+      setState(() {
+        widget.postError = true;
+      });
+      showError(e.toString());
+      print(e.toString());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,220 +138,67 @@ class _PostAndAblumWrapperState extends State<PostAndAblumWrapper> {
   }
 
   Widget _showAsPost() {
-    return ListView.builder(
-      physics: NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      padding: EdgeInsets.only(top: 10, left: 16, right: 16),
-      scrollDirection: Axis.vertical,
-      itemCount: posts.length,
-      itemBuilder: (context, index) => Container(
-        height: 300,
-        child: PostWidget(post: posts[index], showAsColumn: true),
-      ),
-    );
+    return widget.posts != null
+        ? ListView.builder(
+            physics: NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            padding: EdgeInsets.only(top: 10, left: 16, right: 16),
+            scrollDirection: Axis.vertical,
+            itemCount: widget.posts.length,
+            itemBuilder: (context, index) => Container(
+              height: 300,
+              child: PostWidget(
+                  post: widget.posts[index], showAsColumn: true, from: 'card'),
+            ),
+          )
+        : !widget.postError
+            ? Center(child: CircularProgressIndicator())
+            : Center(
+                child: Text("Error!"),
+              );
   }
 
   Widget _showAsGrid() {
-    return GridView.builder(
-      physics: NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      itemCount: posts.length,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3, crossAxisSpacing: 4.0, mainAxisSpacing: 4.0),
-      itemBuilder: (context, index) => GestureDetector(
-        child: Hero(
-          tag: posts[index].imageUrls[0],
-          child: Image.asset(
-            posts[index].imageUrls[0],
-            width: 125.0,
-            height: 125.0,
-            fit: BoxFit.cover,
-          ),
-        ),
-        onTap: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: ((context) => PostDetail(post: posts[index]))));
-        },
-      ),
-    );
-  }
-}
-
-class PostView extends StatelessWidget {
-  final Post post;
-  final int index;
-  final bool showAsColumn;
-
-  const PostView({
-    Key key,
-    @required this.post,
-    this.index = -1,
-    this.showAsColumn = false,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    Pet pet = post.pet;
-
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(context,
-            MaterialPageRoute(builder: ((context) => PostDetail(post: post))));
-      },
-      child: Container(
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-          border: Border.all(
-            color: Colors.grey[200],
-            width: 1,
-          ),
-        ),
-        margin: EdgeInsets.only(
-            right: !showAsColumn && index != null ? 16 : 0,
-            left: !showAsColumn && index == 0 ? 16 : 0,
-            bottom: 16),
-        // width: 220,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Expanded(
-              child: Stack(
-                children: [
-                  Hero(
-                    tag: post.imageUrls[0],
-                    child: Container(
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage(post.imageUrls[0]),
-                          fit: BoxFit.cover,
-                        ),
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: Padding(
-                      padding: EdgeInsets.all(12),
-                      child: GestureDetector(
-                        onTap: () {},
-                        child: Container(
-                          height: 30,
-                          width: 30,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: post.pet.favorite
-                                ? Colors.red[400]
-                                : Colors.white,
-                          ),
-                          child: Icon(
-                            Icons.favorite,
-                            size: 16,
-                            color:
-                                pet.favorite ? Colors.white : Colors.grey[300],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
+    final String _defaultPostImage = 'assets/images/sample/post.jpg';
+    return widget.posts != null
+        ? GridView.builder(
+            physics: NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemCount: widget.posts.length,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3, crossAxisSpacing: 4.0, mainAxisSpacing: 4.0),
+            itemBuilder: (context, index) => GestureDetector(
+              child: Hero(
+                tag: widget.posts[index].imageUrls.isNotEmpty
+                    ? 'grib_' + widget.posts[index].imageUrls[0]
+                    : 'grib_' + 'imageUrl' + widget.posts[index].id.toString(),
+                child: Container(
                     decoration: BoxDecoration(
-                      color: post.postCategory == PostCategory.Adoption
-                          ? Colors.orange[100]
-                          : post.postCategory == PostCategory.Disappear
-                              ? Colors.red[100]
-                              : Colors.blue[100],
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(10),
-                      ),
-                    ),
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    child: Text(
-                      post.conditionText(),
-                      style: TextStyle(
-                        color: post.postCategory == PostCategory.Adoption
-                            ? Colors.orange
-                            : post.postCategory == PostCategory.Disappear
-                                ? Colors.red
-                                : Colors.blue,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: showAsColumn ? 12 : 8,
-                  ),
-                  Text(
-                    pet.name,
-                    style: TextStyle(
-                      color: Colors.grey[800],
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(
-                    height: showAsColumn ? 12 : 8,
-                  ),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.location_on,
-                        color: Colors.grey[600],
-                        size: 18,
-                      ),
-                      SizedBox(
-                        width: 4,
-                      ),
-                      Text(
-                        pet.location,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 12,
+                        image: DecorationImage(
+                  // image: AssetImage(widget.posts[index].imageUrls.isNotEmpty
+                  //     ? widget.posts[index].imageUrls[0]
+                  //     : _defaultPostImage),
+                  image: widget.posts[index].imageUrls.length == 0
+                      ? AssetImage(_defaultPostImage)
+                      : CachedNetworkImageProvider(
+                          Apis.baseUrlOnline + widget.posts[index].imageUrls[0],
                         ),
-                      ),
-                      SizedBox(
-                        width: 4,
-                      ),
-                      Flexible(
-                        child: Text(
-                          "(" + pet.distance + "km)",
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                  fit: BoxFit.cover,
+                ))),
               ),
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: ((context) =>
+                            PostDetail(widget.posts[index], from: 'grid'))));
+              },
             ),
-          ],
-        ),
-      ),
-    );
+          )
+        : !widget.postError
+            ? Center(child: CircularProgressIndicator())
+            : Center(
+                child: Text("Error!"),
+              );
   }
 }

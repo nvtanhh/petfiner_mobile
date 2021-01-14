@@ -1,60 +1,83 @@
 import 'package:pet_finder/core/models/pet.dart';
 import 'package:flutter/material.dart';
-import 'package:pet_finder/core/models/user.dart';
+import 'package:pet_finder/core/models/images_list.dart';
+
+import 'Address.dart';
 
 enum PostCategory { Adoption, Disappear, Mating }
 
 class Post {
-  String id;
+  int id;
   String content;
   Pet pet;
   PostCategory postCategory;
   List<String> imageUrls;
   bool isFavorite;
-  User creator;
+  double distance;
 
-  Post(
-      {this.id,
-      @required this.pet,
-      @required this.imageUrls,
-      @required this.postCategory,
-      @required this.content,
-      @required this.isFavorite,
-      this.creator});
+  Post({
+    this.id,
+    @required this.pet,
+    @required this.imageUrls,
+    @required this.postCategory,
+    @required this.content,
+    @required this.isFavorite,
+    this.distance = 0.0,
+  });
 
   String conditionText() {
     switch (this.postCategory) {
       case PostCategory.Adoption:
         return "Adoption";
+        break;
       case PostCategory.Mating:
         return "Mating";
+        break;
       case PostCategory.Disappear:
         return "Disappear";
+        break;
     }
     return "";
   }
 
-  Post.fromJSON(Map<String, dynamic> json)
-      : id = json['id'],
-        content = json['content'],
-        postCategory = getPostCategory(json['post_category'] as String),
-        imageUrls = (json['id'] as List),
-        isFavorite = json['is_favorite'] == 'true' ? true : false,
-        creator = User.fromJson(json['creator']);
+  Post.fromJson(Map<String, dynamic> json)
+      : id = json['Id'],
+        pet = Pet.fromJson(json['Pet']),
+        content = json['Content'],
+        postCategory = getPostCategory(json['Category']['Id'] as int),
+        imageUrls = ImagesList.fromJson(json['Images']).images,
+        isFavorite = json['IsFavorite'],
+        distance = json['DistanceFromUser'].toDouble();
 
   toJson() {}
 
-  static getPostCategory(String json) {}
+  static PostCategory getPostCategory(int id) {
+    switch (id) {
+      case 1:
+        return PostCategory.Adoption;
+        break;
+      case 2:
+        return PostCategory.Mating;
+        break;
+      case 3:
+        return PostCategory.Disappear;
+        break;
+      default:
+        return PostCategory.Adoption;
+    }
+  }
 }
 
 List<Post> getPostList() {
+  Address defaultAddress = new Address('California', 20.954992, 107.099514);
+
   Pet p1 = Pet(
       "Abyssinian Cats",
       "Just a pet's bio",
       "Alaska",
       "female",
       "2020-07-19",
-      "California",
+      defaultAddress,
       "2.5",
       PetCategory.CAT,
       "assets/images/cats/cat_1.jpg",
@@ -66,7 +89,7 @@ List<Post> getPostList() {
       "Alaska",
       "male",
       "2020-07-19",
-      "New Jersey",
+      defaultAddress,
       "1.2",
       PetCategory.CAT,
       "assets/images/cats/cat_2.jpg",
@@ -78,7 +101,7 @@ List<Post> getPostList() {
       "Alaska",
       "male",
       "2020-07-19",
-      "Miami",
+      defaultAddress,
       "1.2",
       PetCategory.CAT,
       "assets/images/cats/cat_3.jpg",
@@ -90,7 +113,7 @@ List<Post> getPostList() {
       "Alaska",
       "male",
       "2020-07-19",
-      "Chicago",
+      defaultAddress,
       "1.2",
       PetCategory.CAT,
       "assets/images/cats/cat_4.jpg",
@@ -102,7 +125,7 @@ List<Post> getPostList() {
       "Alaska",
       "male",
       "2020-07-19",
-      "Washintong",
+      defaultAddress,
       "1.2",
       PetCategory.CAT,
       "assets/images/cats/cat_5.jpg",

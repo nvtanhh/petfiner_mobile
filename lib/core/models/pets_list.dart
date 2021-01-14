@@ -7,7 +7,7 @@ class PetsList {
 
   factory PetsList.fromJson(List<dynamic> parsedJson) {
     List<Pet> pets =
-        parsedJson.map((circleJson) => Pet.fromJSON(circleJson)).toList();
+        parsedJson.map((circleJson) => Pet.fromJson(circleJson)).toList();
 
     return new PetsList(pets: pets);
   }

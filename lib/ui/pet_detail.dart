@@ -1,4 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:pet_finder/core/apis.dart';
 import 'package:pet_finder/core/models/pet.dart';
 
 import 'package:pet_finder/utils.dart' as utils;
@@ -48,7 +50,7 @@ class PetDetail extends StatelessWidget {
                   Text("More infomation",
                       style: Theme.of(context).textTheme.headline6),
                   SizedBox(height: 5),
-                  Text(pet.bio,
+                  Text(pet.bio ?? 'Empty',
                       style: Theme.of(context)
                           .textTheme
                           .bodyText2
@@ -65,7 +67,11 @@ class PetDetail extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         CircleAvatar(
-          backgroundImage: AssetImage(pet.avatar),
+          backgroundImage: pet?.avatar == null
+              ? AssetImage('assets/images/sample/animal.png')
+              : CachedNetworkImageProvider(
+                  Apis.avatarDirUrl + pet.avatar,
+                ),
           radius: 50,
         ),
         SizedBox(
@@ -80,7 +86,7 @@ class PetDetail extends StatelessWidget {
                 children: [
                   Flexible(
                     child: Text(
-                      pet.name,
+                      pet.name ?? 'Uknow',
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                       style: TextStyle(
@@ -96,7 +102,7 @@ class PetDetail extends StatelessWidget {
                   Container(
                     width: 18,
                     height: 18,
-                    child: pet.gender == 'male'
+                    child: pet.gender == 'Male'
                         ? Image.asset(
                             'assets/icons/male.png',
                             color: Colors.blue,
@@ -112,7 +118,7 @@ class PetDetail extends StatelessWidget {
                 height: 6,
               ),
               Text(
-                pet.breed,
+                pet.breed ?? 'Uknow breed',
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: Colors.grey[600],
@@ -133,7 +139,9 @@ class PetDetail extends StatelessWidget {
                     width: 6,
                   ),
                   Text(
-                    utils.getDaysAgo(pet.birhday) + " days",
+                    pet.age != null
+                        ? pet.age.toString() + " months"
+                        : 'Uknow age',
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: Colors.grey[700],

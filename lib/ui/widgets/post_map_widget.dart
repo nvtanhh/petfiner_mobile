@@ -15,7 +15,7 @@ class PostMapWidget extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => PostDetail(post: post)),
+          MaterialPageRoute(builder: (context) => PostDetail(post)),
         );
       },
       child: Container(
@@ -151,7 +151,7 @@ class PostMapWidget extends StatelessWidget {
                         ),
                         Flexible(
                           child: Text(
-                            post.pet.location,
+                            post.pet.address.toString(),
                             // overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: Colors.grey[600],

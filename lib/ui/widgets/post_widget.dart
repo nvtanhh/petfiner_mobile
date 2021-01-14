@@ -1,4 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:pet_finder/core/apis.dart';
 import 'package:pet_finder/core/models/post.dart';
 import 'package:pet_finder/core/models/pet.dart';
 import 'package:pet_finder/ui/post_detail.dart';
@@ -9,18 +11,25 @@ class PostWidget extends StatelessWidget {
 
   final bool showAsColumn;
 
+  final String from;
+
   PostWidget(
-      {Key key, @required this.post, this.index, this.showAsColumn = false})
+      {Key key,
+      @required this.post,
+      this.index,
+      this.showAsColumn = false,
+      this.from})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     Pet pet = post.pet;
+    String tagPrefix = (from == 'card') ? 'card_' : '';
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => PostDetail(post: post)),
+          MaterialPageRoute(builder: (context) => PostDetail(post, from: from)),
         );
       },
       child: Container(
@@ -47,11 +56,18 @@ class PostWidget extends StatelessWidget {
               child: Stack(
                 children: [
                   Hero(
-                    tag: post.imageUrls[0],
+                    tag: post.imageUrls.isNotEmpty
+                        ? tagPrefix + post.imageUrls[0]
+                        : tagPrefix + 'iamgeUrl' + post.id.toString(),
                     child: Container(
                       decoration: BoxDecoration(
                         image: DecorationImage(
-                          image: AssetImage(post.imageUrls[0]),
+                          image: (post.imageUrls == null &&
+                                  post.imageUrls.length == 0)
+                              ? AssetImage('assets/images/sample/animal.png')
+                              : CachedNetworkImageProvider(
+                                  Apis.baseUrlOnline + post.imageUrls[0],
+                                ),
                           fit: BoxFit.cover,
                         ),
                         borderRadius: BorderRadius.only(
@@ -72,14 +88,14 @@ class PostWidget extends StatelessWidget {
                           width: 30,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: post.pet.favorite
+                            color: post.isFavorite
                                 ? Colors.red[400]
                                 : Colors.white,
                           ),
                           child: Icon(
                             Icons.favorite,
                             size: 16,
-                            color: post.pet.favorite
+                            color: post.isFavorite
                                 ? Colors.white
                                 : Colors.grey[300],
                           ),
@@ -145,7 +161,7 @@ class PostWidget extends StatelessWidget {
                         width: 4,
                       ),
                       Text(
-                        pet.location,
+                        pet?.address?.address ?? 'Unknow',
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: Colors.grey[600],
@@ -157,7 +173,9 @@ class PostWidget extends StatelessWidget {
                       ),
                       Flexible(
                         child: Text(
-                          "(" + pet.distance + "km)",
+                          pet.distance != null
+                              ? "(" + pet.distance.toString() + " km)"
+                              : '',
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: Colors.grey[600],

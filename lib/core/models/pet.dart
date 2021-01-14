@@ -1,12 +1,17 @@
+import 'dart:convert';
+
+import 'package:pet_finder/core/models/Address.dart';
+import 'package:pet_finder/core/models/user.dart';
+
 enum PetCategory { CAT, DOG, OTHER, HAMSTER }
 
 class Pet {
-  String id;
+  int id;
   String name;
   String bio;
   String gender;
   String birhday;
-  String location;
+  Address address;
   String distance;
   PetCategory category;
   String avatar;
@@ -15,23 +20,26 @@ class Pet {
   String breed;
   String color;
   double weight;
+  int age;
+  User owner;
 
-  Pet(this.name, this.bio, this.breed, this.gender, this.birhday, this.location,
+  Pet(this.name, this.bio, this.breed, this.gender, this.birhday, this.address,
       this.distance, this.category, this.avatar, this.favorite, this.newest,
       {this.color, this.weight});
 
-  Pet.fromJSON(Map<String, dynamic> json)
-      : id = json['id'],
-        name = json['name'],
-        bio = json['bio'],
-        gender = json['gender'],
-        birhday = json['birhday'],
-        location = json['location'],
-        category = getPetCategory(json['category'] as String),
-        avatar = json['avatar'],
-        breed = json['breed'],
-        color = json['color'],
-        weight = json['weight'];
+  Pet.fromJson(Map<String, dynamic> json)
+      : name = json['Name'],
+        id = json['Id'],
+        bio = json['Bio'],
+        gender = json['Gender'] == 1 ? 'Male' : 'Female',
+        address = Address.fromJSON(json['Address']),
+        category = getPetCategory(json['Category']['Id'] as int),
+        avatar = json['Avatar'],
+        breed = json['Breed'],
+        color = json['Color'],
+        weight = double.parse(json['Weight']),
+        age = json['Age'] + 1,
+        owner = User.fromJson(json['Owner']);
 
   Map<String, dynamic> toJson() {
     return {
@@ -40,7 +48,7 @@ class Pet {
       'bio': bio,
       'gender': gender,
       'birhday': birhday,
-      'location': location,
+      'location': address,
       'category': categoryToString(category),
       'avatar': avatar,
       'breed': breed,
@@ -49,18 +57,18 @@ class Pet {
     };
   }
 
-  static PetCategory getPetCategory(String category) {
-    switch (category.toLowerCase()) {
-      case 'dog':
+  static PetCategory getPetCategory(int category) {
+    switch (category) {
+      case 1:
         return PetCategory.DOG;
         break;
-      case 'cat':
+      case 2:
         return PetCategory.CAT;
         break;
-      case 'hamster':
+      case 3:
         return PetCategory.HAMSTER;
         break;
-      case 'other':
+      case 4:
         return PetCategory.OTHER;
         break;
       default:
@@ -88,6 +96,7 @@ class Pet {
 }
 
 List<Pet> getPetList() {
+  Address defaultAddress = new Address('California', 20.954992, 107.099514);
   return <Pet>[
     Pet(
         "Abyssinian Cats",
@@ -95,7 +104,7 @@ List<Pet> getPetList() {
         "Alaska",
         "female",
         "2020-07-19",
-        "California",
+        defaultAddress,
         "2.5",
         PetCategory.CAT,
         "assets/images/cats/cat_1.jpg",
@@ -107,23 +116,43 @@ List<Pet> getPetList() {
         "Alaska",
         "male",
         "2020-07-19",
-        "New Jersey",
+        defaultAddress,
         "1.2",
         PetCategory.CAT,
         "assets/images/cats/cat_2.jpg",
         false,
         true),
-    Pet("Ragdoll", "Just a pet's bio", "Alaska", "male", "2020-07-19", "Miami",
-        "1.2", PetCategory.CAT, "assets/images/cats/cat_3.jpg", false, true),
-    Pet("Burmés", "Just a pet's bio", "Alaska", "male", "2020-07-19", "Chicago",
-        "1.2", PetCategory.CAT, "assets/images/cats/cat_4.jpg", true, true),
+    Pet(
+        "Ragdoll",
+        "Just a pet's bio",
+        "Alaska",
+        "male",
+        "2020-07-19",
+        defaultAddress,
+        "1.2",
+        PetCategory.CAT,
+        "assets/images/cats/cat_3.jpg",
+        false,
+        true),
+    Pet(
+        "Burmés",
+        "Just a pet's bio",
+        "Alaska",
+        "male",
+        "2020-07-19",
+        defaultAddress,
+        "1.2",
+        PetCategory.CAT,
+        "assets/images/cats/cat_4.jpg",
+        true,
+        true),
     Pet(
         "American Shorthair",
         "Just a pet's bio",
         "Alaska",
         "male",
         "2020-07-19",
-        "Washintong",
+        defaultAddress,
         "1.2",
         PetCategory.CAT,
         "assets/images/cats/cat_5.jpg",
@@ -135,7 +164,7 @@ List<Pet> getPetList() {
         "Alaska",
         "male",
         "2020-07-19",
-        "New York",
+        defaultAddress,
         "1.9",
         PetCategory.CAT,
         "assets/images/cats/cat_6.jpg",
@@ -147,7 +176,7 @@ List<Pet> getPetList() {
         "Alaska",
         "male",
         "2020-07-19",
-        "California",
+        defaultAddress,
         "2.5",
         PetCategory.CAT,
         "assets/images/cats/cat_7.jpg",
@@ -159,7 +188,7 @@ List<Pet> getPetList() {
         "Alaska",
         "male",
         "2020-07-19",
-        "New Jersey",
+        defaultAddress,
         "1.2",
         PetCategory.CAT,
         "assets/images/cats/cat_8.jpg",

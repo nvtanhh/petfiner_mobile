@@ -1,19 +1,17 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image/image.dart' as Im;
+import 'package:pet_finder/core/models/user.dart';
 
 class EditProfile extends StatefulWidget {
-  final String photoUrl, email, bio, name, phone;
-  EditProfile(
-      {this.photoUrl = '',
-      this.email = '',
-      this.bio = '',
-      this.name = '',
-      this.phone = ''});
+  final User user;
+
+  EditProfile(this.user);
 
   @override
   _EditProfileState createState() => _EditProfileState();
@@ -30,12 +28,12 @@ class _EditProfileState extends State<EditProfile> {
   @override
   void initState() {
     super.initState();
-    print(widget.photoUrl.toString());
-
-    _nameController.text = widget.name;
-    _bioController.text = widget.bio;
-    _emailController.text = widget.email;
-    _phoneController.text = widget.phone;
+    if (widget.user != null) {
+      _nameController.text = widget.user.name;
+      _bioController.text = widget.user.bio;
+      _emailController.text = widget.user.email;
+      _phoneController.text = widget.user.phone;
+    }
   }
 
   Future<File> _pickImage() async {
@@ -101,11 +99,11 @@ class _EditProfileState extends State<EditProfile> {
                   ),
                 ),
                 radius: 50,
-                backgroundImage: widget.photoUrl.isEmpty
+                backgroundImage: widget.user?.avatar == null
                     ? imageFile == null
                         ? AssetImage('assets/images/sample/avt.jpg')
                         : FileImage(imageFile)
-                    : NetworkImage(widget.photoUrl),
+                    : CachedNetworkImage(imageUrl: widget.user.avatar),
               ),
             ],
           ),
@@ -167,6 +165,7 @@ class _EditProfileState extends State<EditProfile> {
                     labelText: 'Email address',
                     labelStyle: TextStyle(fontSize: 14),
                   ),
+                  readOnly: true,
                   onChanged: ((value) {
                     setState(() {
                       _emailController.text = value;

@@ -15,6 +15,7 @@ class MyNavigator extends StatefulWidget {
 class _MyNavigatorState extends State<MyNavigator>
     with SingleTickerProviderStateMixin {
   List<Pet> pets = getPetList();
+  List<Widget> bodies;
 
   // final autoSizeGroup = AutoSizeGroup();
   var _bottomNavIndex = 0; //default index of first screen
@@ -28,13 +29,6 @@ class _MyNavigatorState extends State<MyNavigator>
     Icons.search,
     Icons.notifications,
     Icons.person,
-  ];
-
-  final bodies = <Widget>[
-    HomeScreen(),
-    SearchScreen(),
-    NotifyScreen(),
-    ProfileScreen(),
   ];
 
   @override
@@ -62,6 +56,13 @@ class _MyNavigatorState extends State<MyNavigator>
       Duration(seconds: 1),
       () => _animationController.forward(),
     );
+
+    final tab1 = HomeScreen(key: Key('tab1'));
+    final tab2 = SearchScreen(key: Key('tab2'));
+    final tab3 = NotifyScreen(key: Key('tab3'));
+    final tab4 = ProfileScreen(key: Key('tab4'));
+
+    bodies = [tab1, tab2, tab3, tab4];
   }
 
   @override
@@ -99,6 +100,9 @@ class _MyNavigatorState extends State<MyNavigator>
           onTap: (index) => setState(() => _bottomNavIndex = index),
           //other params
         ),
-        body: bodies[_bottomNavIndex]);
+        body: IndexedStack(
+          index: _bottomNavIndex,
+          children: bodies,
+        ));
   }
 }

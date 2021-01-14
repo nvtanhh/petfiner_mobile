@@ -1,4 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:pet_finder/core/apis.dart';
 import 'package:pet_finder/core/models/pet.dart';
 import 'package:pet_finder/ui/create_post.dart';
 import 'package:pet_finder/ui/widgets/pet_widget_small.dart';
@@ -79,7 +81,11 @@ class ChoosePet extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             CircleAvatar(
-              backgroundImage: AssetImage(pet.avatar),
+              backgroundImage: pet?.avatar == null
+                  ? AssetImage('assets/sample/animal.jpg')
+                  : CachedNetworkImageProvider(
+                      Apis.avatarDirUrl + pet.avatar,
+                    ),
               radius: 40,
             ),
             SizedBox(

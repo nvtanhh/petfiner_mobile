@@ -1,61 +1,100 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:pet_finder/core/apis.dart';
 import 'package:pet_finder/core/models/pet.dart';
+import 'package:pet_finder/core/models/pets_list.dart';
+import 'package:pet_finder/core/models/post.dart';
+import 'package:pet_finder/core/models/posts_list.dart';
 import 'package:pet_finder/core/models/user.dart';
-import 'package:pet_finder/ui/auth/login.dart';
 import 'package:pet_finder/ui/edit_profile.dart';
 import 'package:pet_finder/ui/pets_manager.dart';
+import 'package:pet_finder/ui/widgets/drawer.dart';
 import 'package:pet_finder/ui/widgets/pet_widget_small.dart';
 import 'package:pet_finder/ui/widgets/post_and_album_tabs.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pet_finder/utils.dart';
+import 'package:http/http.dart' as http;
 
 class ProfileScreen extends StatefulWidget {
   final User user;
 
-  ProfileScreen({this.user});
+  ProfileScreen({this.user, Key key}) : super(key: key);
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  User user;
+  String token;
+  List<Pet> _myPets;
+  List<Post> _myPosts;
+  bool petError = false;
+  bool postError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        key: _scaffoldKey,
         backgroundColor: Colors.white,
+        endDrawer: MyDrawer(),
         appBar: AppBar(
           iconTheme: IconThemeData(
             color: Colors.black,
           ),
           automaticallyImplyLeading: true,
           title: Text(
-            "Catlover_2549",
+            user != null ? user.name : 'Username',
             style: const TextStyle(color: Colors.black),
           ),
           backgroundColor: Colors.white,
           actions: [
             if (widget.user == null)
-              IconButton(icon: Icon(Icons.logout), onPressed: _showLogoutDialog)
+              IconButton(
+                  icon: Icon(Icons.settings_outlined),
+                  onPressed: _openEndDrawer)
           ],
         ),
-        body: ListView(
-          physics: BouncingScrollPhysics(),
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 16, right: 16, top: 10),
-              child: _buildProfileInfo(),
-            ),
-            // SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.only(left: 16, right: 16, top: 10),
-              child: _buildMyPetsWrapper(),
-            ),
-            SizedBox(height: 5),
-            PostAndAblumWrapper(),
-          ],
+        body: RefreshIndicator(
+          onRefresh: _refresh,
+          child: ListView(
+            // physics: BouncingScrollPhysics(),
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 16, right: 16, top: 10),
+                child: _buildProfileInfo(),
+              ),
+              // SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.only(left: 16, right: 16, top: 10),
+                child: _buildMyPetsWrapper(),
+              ),
+              SizedBox(height: 5),
+              PostAndAblumWrapper(
+                posts: _myPosts,
+                postError: postError,
+              ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  void _openEndDrawer() {
+    _scaffoldKey.currentState.openEndDrawer();
   }
 
   Widget _buildProfileInfo() {
@@ -67,7 +106,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               CircleAvatar(
                 radius: 35,
-                backgroundImage: AssetImage('assets/images/user_avatar.jpg'),
+                backgroundImage: user?.avatar == null
+                    ? AssetImage('assets/images/user_avatar.jpg')
+                    : CachedNetworkImageProvider(
+                        Apis.avatarDirUrl + user.avatar),
               ),
               SizedBox(
                 width: 40,
@@ -128,7 +170,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Catlover_2549',
+                user != null ? user.name : 'Username',
                 style: Theme.of(context)
                     .textTheme
                     .subtitle2
@@ -144,14 +186,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Expanded(
                 child: GestureDetector(
                   onTap: () {
-                    Navigator.push(
-                        context,
-                        new MaterialPageRoute(
-                            builder: (context) => EditProfile()));
+                    if (widget.user != null) {
+                    } else
+                      Navigator.push(
+                          context,
+                          new MaterialPageRoute(
+                              builder: (context) => EditProfile(user)));
                   },
                   child: Container(
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
+                      color: widget.user != null ? Colors.blue : Colors.white,
                       borderRadius: BorderRadius.all(
                         Radius.circular(5),
                       ),
@@ -163,8 +208,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(8),
                       child: Text(
-                        'Edit your profile',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        widget.user != null ? 'Contact' : 'Edit your profile',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: widget.user != null
+                                ? Colors.white
+                                : Colors.black),
                       ),
                     ),
                   ),
@@ -178,15 +227,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildMyPetsWrapper() {
-    List<Pet> _myPets = getPetList().sublist(0, 3);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         GestureDetector(
           onTap: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: ((context) => PetsManager())));
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: ((context) => PetsManager(_myPets))));
           },
           child: Container(
             padding: EdgeInsets.symmetric(vertical: 12),
@@ -214,76 +263,146 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
         ),
-        Container(
-          height: 80,
-          child: ListView.builder(
-            physics: BouncingScrollPhysics(),
-            shrinkWrap: true,
-            scrollDirection: Axis.horizontal,
-            itemCount: _myPets.length,
-            itemBuilder: (BuildContext context, int index) => PetWidget(
-                pet: _myPets[index], last: index == _myPets.length - 1),
-          ),
-        )
+        _myPets != null
+            ? Container(
+                height: 80,
+                child: ListView.builder(
+                    physics: BouncingScrollPhysics(),
+                    shrinkWrap: true,
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _myPets.length,
+                    itemBuilder: (BuildContext context, int index) => PetWidget(
+                        pet: _myPets[index],
+                        last: index == _myPets.length - 1)),
+              )
+            : Container(
+                alignment: Alignment.center,
+                child: !petError
+                    ? Center(child: CircularProgressIndicator())
+                    : Center(
+                        child: Text("Error!"),
+                      ),
+              )
       ],
     );
   }
 
-  _showLogoutDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return new AlertDialog(
-          content: Text(
-            "Are you sure to logout?",
-            style: TextStyle(
-                fontWeight: FontWeight.w400,
-                fontSize: 16,
-                color: Colors.black54),
-          ),
-          actions: <Widget>[
-            ButtonTheme(
-              //minWidth: double.infinity,
-              child: RaisedButton(
-                elevation: 3.0,
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text('Cancel'),
-                color: Colors.grey[400],
-                textColor: const Color(0xffffffff),
-              ),
-            ),
-            ButtonTheme(
-              //minWidth: double.infinity,
-              child: RaisedButton(
-                elevation: 3.0,
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  _logout();
-                },
-                child: Text('Logout'),
-                color: Theme.of(context).primaryColor,
-                textColor: const Color(0xffffffff),
-              ),
-            ),
-          ],
-        );
-      },
-    );
+  void _loadLoggedUser() async {
+    try {
+      http.Response response = await http.get(
+        Apis.getUserInfo,
+        headers: {
+          HttpHeaders.contentTypeHeader: 'application/json',
+          HttpHeaders.authorizationHeader: 'Bearer $token',
+        },
+      ).timeout(Duration(seconds: 30));
+      print('_loadLoggedUser: ' + response.statusCode.toString());
+      if (response.statusCode == 200) {
+        var parsedJson = jsonDecode(response.body);
+        setState(() {
+          user = User.fromJson(parsedJson);
+        });
+      } else if (response.statusCode == 500) {
+        showError('Server error, please try again latter.');
+      }
+    } on TimeoutException catch (e) {
+      showError(e.toString());
+    } on SocketException catch (e) {
+      showError(e.toString());
+      print(e.toString());
+    }
   }
 
-  void _logout() {
-    _removeToken();
-    Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => LoginScreen(),
-        ));
+  void _loadMyPets() async {
+    try {
+      http.Response response = await http.get(
+        Apis.getMyPets,
+        headers: {
+          HttpHeaders.contentTypeHeader: 'application/json',
+          HttpHeaders.authorizationHeader: 'Bearer $token',
+        },
+      ).timeout(Duration(seconds: 30));
+      print('_loadMyPets:   ' + response.statusCode.toString());
+      if (response.statusCode == 200) {
+        var parsedJson = jsonDecode(response.body);
+        setState(() {
+          _myPets = PetsList.fromJson(parsedJson).pets;
+        });
+      } else if (response.statusCode == 500) {
+        showError('Server error, please try again latter.');
+        setState(() {
+          petError = true;
+        });
+      } else {
+        setState(() {
+          petError = true;
+        });
+      }
+    } on TimeoutException catch (e) {
+      setState(() {
+        petError = true;
+      });
+      showError(e.toString());
+    } on SocketException catch (e) {
+      setState(() {
+        petError = true;
+      });
+      showError(e.toString());
+    }
   }
 
-  void _removeToken() async {
-    SharedPreferences _prefs = await SharedPreferences.getInstance();
-    _prefs.remove('token');
+  void _loadMyPosts() async {
+    String token = await getStringValue('token');
+    try {
+      http.Response response = await http.get(
+        Apis.getMyPosts,
+        headers: {
+          HttpHeaders.contentTypeHeader: 'application/json',
+          HttpHeaders.authorizationHeader: 'Bearer $token',
+        },
+      ).timeout(Duration(seconds: 30));
+      print('_loadMyPosts: ' + response.statusCode.toString());
+      if (response.statusCode == 200) {
+        var parsedJson = jsonDecode(response.body);
+        setState(() {
+          _myPosts = PostsList.fromJson(parsedJson).posts;
+        });
+      } else if (response.statusCode == 500) {
+        showError('Server error, please try again latter.');
+        setState(() {
+          postError = true;
+        });
+      } else {
+        setState(() {
+          postError = true;
+        });
+      }
+    } on TimeoutException catch (e) {
+      setState(() {
+        postError = true;
+      });
+      showError(e.toString());
+    } on SocketException catch (e) {
+      setState(() {
+        postError = true;
+      });
+      showError(e.toString());
+      print(e.toString());
+    }
+  }
+
+  Future<void> _loadData() async {
+    token = await getStringValue('token');
+    if (widget.user == null)
+      _loadLoggedUser();
+    else
+      user = widget.user;
+    _loadMyPets();
+    _loadMyPosts();
+  }
+
+  Future<void> _refresh() async {
+    _myPets = null;
+    _loadData();
   }
 }

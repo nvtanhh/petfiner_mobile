@@ -25,10 +25,10 @@ class MyPetsWrapper extends StatelessWidget {
               Expanded(
                 child: GestureDetector(
                   onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: ((context) => PetsManager())));
+                    // Navigator.push(
+                    //     context,
+                    //     MaterialPageRoute(
+                    //         builder: ((context) => PetsManager())));
                   },
                   child: Container(
                     margin: EdgeInsets.only(left: 10),

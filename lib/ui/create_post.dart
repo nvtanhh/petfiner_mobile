@@ -1,15 +1,20 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pet_finder/core/apis.dart';
 import 'package:pet_finder/core/models/pet.dart';
 import 'package:image/image.dart' as Im;
 import 'package:pet_finder/ui/bottom_navigator.dart';
 import 'package:pet_finder/ui/home_screen.dart';
+import 'package:pet_finder/ui/pet_detail.dart';
+import 'package:pet_finder/ui/widgets/pet_widget_small.dart';
 
 class CreatePost extends StatefulWidget {
   final Pet pet;
@@ -24,7 +29,24 @@ class _CreatePostState extends State<CreatePost> {
   var _contentController;
 
   final picker = ImagePicker();
-  // File imageFile;
+  List<File> _uploadedImages = [];
+
+  KeyboardVisibilityController keyboardVisibilityController;
+  bool isKeyboardShowing = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    keyboardVisibilityController = KeyboardVisibilityController();
+    keyboardVisibilityController.onChange.listen((bool visible) {
+      if (this.mounted)
+        setState(() {
+          isKeyboardShowing = visible;
+          print(visible.toString());
+        });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,55 +83,51 @@ class _CreatePostState extends State<CreatePost> {
   }
 
   Widget _buildBody() {
-    return ListView(
-      physics: BouncingScrollPhysics(),
-      children: [
-        SizedBox(height: 20),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            children: [
-              CircleAvatar(
-                backgroundImage: AssetImage(widget.pet.avatar),
-                radius: 30,
-              ),
-              SizedBox(height: 5),
-              Text(widget.pet.name)
-            ],
-          ),
-        ),
-        SizedBox(height: 30),
-        Container(
-          height: MediaQuery.of(context).size.height * .25,
-          child: TextField(
-            controller: _contentController,
-            decoration: InputDecoration(
-              contentPadding: EdgeInsets.symmetric(horizontal: 16),
-              border: InputBorder.none,
-              focusedBorder: InputBorder.none,
-              enabledBorder: InputBorder.none,
-              errorBorder: InputBorder.none,
-              disabledBorder: InputBorder.none,
-              hintText: 'Add your content',
-              hintStyle: TextStyle(color: Colors.grey),
+    return Container(
+      padding: const EdgeInsets.only(top: 20, left: 16, right: 16),
+      child: Column(
+        children: [
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildUserAvtar(),
+                Expanded(
+                  child: ListView(
+                    children: [
+                      TextField(
+                        controller: _contentController,
+                        decoration: InputDecoration(
+                          contentPadding:
+                              EdgeInsets.only(left: 16, right: 16, bottom: 75),
+                          border: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          errorBorder: InputBorder.none,
+                          disabledBorder: InputBorder.none,
+                          hintText: 'Add your content',
+                          hintStyle: TextStyle(color: Colors.grey),
+                        ),
+                        style: TextStyle(fontSize: 16, color: Colors.black87),
+                        maxLines: null,
+                        keyboardType: TextInputType.multiline,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            style: TextStyle(fontSize: 16, color: Colors.black87),
-            maxLines: null,
-            expands: true,
-            keyboardType: TextInputType.multiline,
+            // ),
           ),
-        ),
-        _addImageWrapper(),
-        // TextField()
-        // SizedBox(
-        //   height: MediaQuery.of(context).viewInsets.bottom,
-        // ),
-      ],
-      // ),
+          _addImageWrapper(),
+          if (!isKeyboardShowing)
+            SizedBox(
+              height: 265,
+            )
+        ],
+      ),
     );
   }
-
-  List<File> _uploadedImages = [];
 
   Widget _addImageWrapper() {
     return Container(
@@ -123,7 +141,7 @@ class _CreatePostState extends State<CreatePost> {
             mainAxisSize: MainAxisSize.max,
             children: [
               ListView.builder(
-                padding: EdgeInsets.only(left: 16),
+                // padding: EdgeInsets.only(left: 16),
                 physics: NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
                 scrollDirection: Axis.horizontal,
@@ -285,5 +303,51 @@ class _CreatePostState extends State<CreatePost> {
         _uploadedImages.add(newim2);
       });
     print('done');
+  }
+
+  _buildUserAvtar() {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(context,
+            new MaterialPageRoute(builder: (context) => PetDetail(widget.pet)));
+      },
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.15,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              margin: EdgeInsets.only(bottom: 5),
+              alignment: Alignment.topCenter,
+              width: 45,
+              height: 45,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                image: DecorationImage(
+                  image: widget.pet?.avatar == null
+                      ? AssetImage('assets/sample/animal.jpg')
+                      : CachedNetworkImageProvider(
+                          Apis.avatarDirUrl + widget.pet.avatar,
+                        ),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            Flexible(
+              child: Text(
+                widget.pet.name,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                style: TextStyle(
+                  color: Colors.grey[800],
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
