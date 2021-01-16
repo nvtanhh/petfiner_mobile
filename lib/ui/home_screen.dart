@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:pet_finder/core/apis.dart';
+import 'package:pet_finder/core/services/my_location.dart';
 import 'package:pet_finder/core/models/posts_list.dart';
 import 'package:pet_finder/ui/widgets/post_widget.dart';
 
@@ -21,7 +22,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<Post> posts;
   bool _error = false;
-
   @override
   void initState() {
     super.initState();
@@ -89,6 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           key: ObjectKey(posts[index]),
                                           post: posts[index],
                                           showAsColumn: true,
+                                          from: 'home_',
                                         ),
                                       ),
                                     ),
@@ -147,15 +148,27 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadNewPosts() async {
     _removeError();
     String token = await getStringValue('token');
+
+    Map<String, String> queryParams;
+    if (MyLocation().haveData)
+      queryParams = {
+        'Lat': MyLocation().lat?.toString() ?? '',
+        'Lon': MyLocation().long?.toString() ?? '',
+      };
+
+    String queryString = (queryParams != null)
+        ? '?' + Uri(queryParameters: queryParams).query
+        : '';
     try {
       http.Response response = await http.get(
-        Apis.getPostUrl,
+        Apis.getPostUrl + queryString,
         headers: {
           HttpHeaders.contentTypeHeader: 'application/json',
           HttpHeaders.authorizationHeader: 'Bearer $token',
         },
       ).timeout(Duration(seconds: 30));
-      print(response.statusCode);
+
+      print('_loadNewPosts:  Home Screen' + response.statusCode.toString());
       if (response.statusCode == 200) {
         var parsedJson = jsonDecode(response.body);
         PostsList postsList = PostsList.fromJson(parsedJson);
@@ -177,9 +190,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onError() {
-    setState(() {
-      _error = true;
-    });
+    if (!_error)
+      setState(() {
+        _error = true;
+      });
   }
 
   void _removeError() {

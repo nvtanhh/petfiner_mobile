@@ -10,6 +10,7 @@ import 'package:pet_finder/core/models/pet.dart';
 import 'package:pet_finder/core/models/pets_list.dart';
 import 'package:pet_finder/core/models/post.dart';
 import 'package:pet_finder/core/models/posts_list.dart';
+import 'package:pet_finder/core/services/my_location.dart';
 import 'package:pet_finder/core/models/user.dart';
 import 'package:pet_finder/ui/edit_profile.dart';
 import 'package:pet_finder/ui/pets_manager.dart';
@@ -353,9 +354,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _loadMyPosts() async {
     String token = await getStringValue('token');
+    Map<String, String> queryParams;
+    if (MyLocation().haveData)
+      queryParams = {
+        'Lat': MyLocation().lat?.toString() ?? '',
+        'Lon': MyLocation().long?.toString() ?? '',
+      };
+
+    String queryString = (queryParams != null)
+        ? '?' + Uri(queryParameters: queryParams).query
+        : '';
     try {
       http.Response response = await http.get(
-        Apis.getMyPosts,
+        Apis.getMyPosts + queryString,
         headers: {
           HttpHeaders.contentTypeHeader: 'application/json',
           HttpHeaders.authorizationHeader: 'Bearer $token',

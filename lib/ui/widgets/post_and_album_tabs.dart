@@ -148,7 +148,7 @@ class _PostAndAblumWrapperState extends State<PostAndAblumWrapper> {
             itemBuilder: (context, index) => Container(
               height: 300,
               child: PostWidget(
-                  post: widget.posts[index], showAsColumn: true, from: 'card'),
+                  post: widget.posts[index], showAsColumn: true, from: 'card_'),
             ),
           )
         : !widget.postError
@@ -170,7 +170,9 @@ class _PostAndAblumWrapperState extends State<PostAndAblumWrapper> {
             itemBuilder: (context, index) => GestureDetector(
               child: Hero(
                 tag: widget.posts[index].imageUrls.isNotEmpty
-                    ? 'grib_' + widget.posts[index].imageUrls[0]
+                    ? 'grib_' +
+                        widget.posts[index].id.toString() +
+                        widget.posts[index].imageUrls[0]
                     : 'grib_' + 'imageUrl' + widget.posts[index].id.toString(),
                 child: Container(
                     decoration: BoxDecoration(
@@ -191,7 +193,7 @@ class _PostAndAblumWrapperState extends State<PostAndAblumWrapper> {
                     context,
                     MaterialPageRoute(
                         builder: ((context) =>
-                            PostDetail(widget.posts[index], from: 'grid'))));
+                            PostDetail(widget.posts[index], from: 'grid_'))));
               },
             ),
           )

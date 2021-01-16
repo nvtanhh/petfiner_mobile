@@ -4,6 +4,7 @@ import 'package:pet_finder/core/apis.dart';
 import 'package:pet_finder/core/models/post.dart';
 import 'package:pet_finder/core/models/pet.dart';
 import 'package:pet_finder/ui/post_detail.dart';
+import 'package:pet_finder/utils.dart';
 
 class PostWidget extends StatelessWidget {
   final Post post;
@@ -24,7 +25,7 @@ class PostWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Pet pet = post.pet;
-    String tagPrefix = (from == 'card') ? 'card_' : '';
+    String tagPrefix = from ?? '';
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -57,7 +58,7 @@ class PostWidget extends StatelessWidget {
                 children: [
                   Hero(
                     tag: post.imageUrls.isNotEmpty
-                        ? tagPrefix + post.imageUrls[0]
+                        ? tagPrefix + post.id.toString() + post.imageUrls[0]
                         : tagPrefix + 'iamgeUrl' + post.id.toString(),
                     child: Container(
                       decoration: BoxDecoration(
@@ -103,93 +104,125 @@ class PostWidget extends StatelessWidget {
                       ),
                     ),
                   ),
+                  if (!showAsColumn)
+                    Align(
+                      alignment: Alignment.bottomLeft,
+                      child: Padding(
+                        padding: EdgeInsets.all(6),
+                        child: _buildPostCategory(),
+                      ),
+                    ),
                 ],
               ),
             ),
             Padding(
-              padding: EdgeInsets.all(16),
+              padding: EdgeInsets.all(showAsColumn ? 16 : 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: post.postCategory == PostCategory.Adoption
-                          ? Colors.orange[100]
-                          : post.postCategory == PostCategory.Disappear
-                              ? Colors.red[100]
-                              : Colors.blue[100],
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(10),
-                      ),
-                    ),
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    child: Text(
-                      post.conditionText(),
-                      style: TextStyle(
-                        color: post.postCategory == PostCategory.Adoption
-                            ? Colors.orange
-                            : post.postCategory == PostCategory.Disappear
-                                ? Colors.red
-                                : Colors.blue,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
+                  if (showAsColumn) _buildPostCategory(),
                   SizedBox(
                     height: showAsColumn ? 12 : 8,
                   ),
                   Text(
                     pet.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: Colors.grey[800],
-                      fontSize: 18,
+                      fontSize: showAsColumn ? 18 : 14,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(
-                    height: showAsColumn ? 12 : 8,
-                  ),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.location_on,
-                        color: Colors.grey[600],
-                        size: 18,
-                      ),
-                      SizedBox(
-                        width: 4,
-                      ),
-                      Text(
-                        pet?.address?.address ?? 'Unknow',
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 12,
-                        ),
-                      ),
-                      SizedBox(
-                        width: 4,
-                      ),
-                      Flexible(
-                        child: Text(
-                          pet.distance != null
-                              ? "(" + pet.distance.toString() + " km)"
-                              : '',
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
+                  // SizedBox(
+                  //   height: showAsColumn ? 12 : 8,
+                  // ),
+                  if (showAsColumn)
+                    Padding(
+                      padding: EdgeInsets.only(top: showAsColumn ? 12 : 8),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.location_on,
                             color: Colors.grey[600],
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                            size: 18,
                           ),
-                        ),
+                          SizedBox(
+                            width: 4,
+                          ),
+                          FutureBuilder(
+                            future: getAdress(post.pet.address.address),
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                return Flexible(
+                                  child: Text(
+                                    snapshot.data,
+                                    // overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 12,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                );
+                              } else
+                                return Container();
+                            },
+                          ),
+                          SizedBox(
+                            width: 4,
+                          ),
+                          Flexible(
+                            child: Text(
+                              post.distance != null
+                                  ? "(" +
+                                      post.distance.toStringAsFixed(2) +
+                                      " km)"
+                                  : '',
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
                 ],
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  _buildPostCategory() {
+    return Container(
+      decoration: BoxDecoration(
+        color: post.postCategory == PostCategory.Adoption
+            ? Colors.orange[100]
+            : post.postCategory == PostCategory.Disappear
+                ? Colors.red[100]
+                : Colors.blue[100],
+        borderRadius: BorderRadius.all(
+          Radius.circular(10),
+        ),
+      ),
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: Text(
+        post.conditionText(),
+        style: TextStyle(
+          color: post.postCategory == PostCategory.Adoption
+              ? Colors.orange
+              : post.postCategory == PostCategory.Disappear
+                  ? Colors.red
+                  : Colors.blue,
+          fontWeight: FontWeight.bold,
+          fontSize: 12,
         ),
       ),
     );

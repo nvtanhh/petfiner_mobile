@@ -1,12 +1,20 @@
+import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:pet_finder/core/apis.dart';
+import 'package:pet_finder/core/models/posts_list.dart';
 import 'package:pet_finder/ui/widgets/post_map_widget.dart';
 import 'package:pet_finder/core/models/post.dart';
+import 'package:pet_finder/utils.dart';
+import 'package:http/http.dart' as http;
+import 'package:pet_finder/core/services/my_location.dart';
 
 class MapSearcher extends StatefulWidget {
   MapSearcher({Key key}) : super(key: key);
@@ -31,30 +39,33 @@ class _MapSearcherState extends State<MapSearcher> {
 
   static LatLng _initialPosition = LatLng(10.873286, 106.7914436);
 
-  List<Post> posts = getPostList();
-
   double _radius = 1000;
+  bool _isLoaded = false;
+  List<Post> _posts;
+  bool _error = false;
 
   @override
   void initState() {
     super.initState();
     _currentRadius = _radiuses[0];
     checkPermision();
-    _getUserLocation();
   }
 
   void _getUserLocation() async {
-    Position position = await Geolocator()
-        .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    List<Placemark> placemark = await Geolocator()
-        .placemarkFromCoordinates(position.latitude, position.longitude);
-    setState(() {
+    if (MyLocation().haveData) {
+      _initialPosition = LatLng(MyLocation().lat, MyLocation().long);
+    } else {
+      Position position = await Geolocator()
+          .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
       _initialPosition = LatLng(position.latitude, position.longitude);
-      print('${placemark[0].name}');
-    });
+    }
 
+    setState(() {
+      _isLoaded = true;
+    });
     _moveCameraToUserLocation();
     _setCircles();
+    _searchPosts();
   }
 
   // _onCameraMove(CameraPosition position) {
@@ -73,6 +84,8 @@ class _MapSearcherState extends State<MapSearcher> {
   void checkPermision() async {
     if (!await Permission.location.status.isGranted) {
       await Permission.location.request();
+    } else {
+      _getUserLocation();
     }
   }
 
@@ -107,7 +120,7 @@ class _MapSearcherState extends State<MapSearcher> {
               children: <Widget>[
                 _googleMap(context),
                 _buildSearchBar(),
-                _buildContainer(),
+                if (_isLoaded) _buildContainer(),
               ],
             ),
           ),
@@ -158,12 +171,18 @@ class _MapSearcherState extends State<MapSearcher> {
       child: Container(
         margin: EdgeInsets.symmetric(vertical: 20),
         height: 150,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          itemCount: posts.length,
-          itemBuilder: (BuildContext context, int index) =>
-              PostMapWidget(post: posts[index], index: index),
-        ),
+        child: _posts != null
+            ? ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _posts.length,
+                itemBuilder: (BuildContext context, int index) =>
+                    PostMapWidget(post: _posts[index], index: index),
+              )
+            : _error
+                ? Center(child: Text('Error.'))
+                : Center(
+                    child: Container(),
+                  ),
       ),
     );
   }
@@ -241,9 +260,9 @@ class _MapSearcherState extends State<MapSearcher> {
                                   _currentRadius.indexOf(' '),
                                 ) +
                                 '000');
-                            print("NEW RADIUS: " + _radius.toString());
-                            _setCircles();
                           });
+                          _setCircles();
+                          _searchPosts();
                         },
                       ),
                     ),
@@ -274,5 +293,78 @@ class _MapSearcherState extends State<MapSearcher> {
         ],
       ),
     );
+  }
+
+  void _searchPosts() async {
+    String token = await getStringValue('token');
+    // int categoryId = getCategoryId(widget.category);
+    String radiusInt = _currentRadius.substring(
+      0,
+      _currentRadius.indexOf(' '),
+    );
+    Map<String, String> queryParams;
+    if (_initialPosition != null)
+      queryParams = {
+        'Lat': _initialPosition.latitude?.toString() ?? '',
+        'Lon': _initialPosition.latitude?.toString() ?? '',
+        'Radius': radiusInt,
+      };
+    String queryString = (queryParams != null)
+        ? '?' + Uri(queryParameters: queryParams).query
+        : '';
+    try {
+      http.Response response = await http.get(
+        Apis.getPostUrl + queryString,
+        headers: {
+          HttpHeaders.contentTypeHeader: 'application/json',
+          HttpHeaders.authorizationHeader: 'Bearer $token',
+        },
+      ).timeout(Duration(seconds: 30));
+      print('_searchPosts:  ' + response.statusCode.toString());
+      if (response.statusCode == 200) {
+        var parsedJson = jsonDecode(response.body);
+        PostsList postsList = PostsList.fromJson(parsedJson);
+
+        _drawMarker(postsList.posts);
+        setState(() {
+          _posts = postsList.posts;
+        });
+      } else if (response.statusCode == 500) {
+        _onError();
+        showError('Server error, please try again latter.');
+      }
+    } on TimeoutException catch (e) {
+      _onError();
+      showError(e.toString());
+    } on SocketException catch (e) {
+      _onError();
+      showError(e.toString());
+    }
+  }
+
+  void _onError() {
+    if (!_error)
+      setState(() {
+        _error = true;
+      });
+  }
+
+  void _removeError() {
+    setState(() {
+      _error = false;
+    });
+  }
+
+  void _drawMarker(List<Post> posts) {
+    _allMarkers.clear();
+    for (Post post in posts) {
+      List<String> spliter = post.pet.address.address.split(';');
+      double lat = double.parse(spliter[0]);
+      double long = double.parse(spliter[1]);
+      _allMarkers.add(new Marker(
+          markerId: MarkerId(post.id.toString()),
+          position: LatLng(lat, long),
+          infoWindow: InfoWindow(title: post.pet.name)));
+    }
   }
 }

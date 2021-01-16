@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -192,10 +193,10 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
                                 builder: ((context) => PlacePicker(apiKey))));
 
                         print("RESULT: " + latLng.toString());
+                        String address = await getAddressFromLatLng(
+                            latLng.latitude, latLng.longitude);
                         setState(() {
-                          _addressController.text = latLng.latitude.toString() +
-                              " | " +
-                              latLng.longitude.toString();
+                          _addressController.text = address;
                         });
                       },
                     ),

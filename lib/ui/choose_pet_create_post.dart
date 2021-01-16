@@ -1,13 +1,24 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_finder/core/apis.dart';
 import 'package:pet_finder/core/models/pet.dart';
+import 'package:pet_finder/core/models/pets_list.dart';
 import 'package:pet_finder/ui/create_post.dart';
-import 'package:pet_finder/ui/widgets/pet_widget_small.dart';
+import 'package:http/http.dart' as http;
+import 'package:pet_finder/utils.dart';
 
-class ChoosePet extends StatelessWidget {
+class ChoosePet extends StatefulWidget {
   const ChoosePet({Key key}) : super(key: key);
 
+  @override
+  _ChoosePetState createState() => _ChoosePetState();
+}
+
+class _ChoosePetState extends State<ChoosePet> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,7 +35,6 @@ class ChoosePet extends StatelessWidget {
   }
 
   _buildBody(BuildContext context) {
-    List<Pet> _myPets = getPetList().sublist(0, 3);
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -39,18 +49,29 @@ class ChoosePet extends StatelessWidget {
               style: Theme.of(context).textTheme.headline6,
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 0),
-            child: GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12),
-              padding: EdgeInsets.all(16),
-              shrinkWrap: true,
-              itemCount: _myPets.length,
-              itemBuilder: (context, index) {
-                return _petItem(_myPets[index], context);
-              },
-            ),
+          FutureBuilder(
+            future: _loadMyPet(),
+            builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+              if (snapshot.hasData) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 0),
+                  child: GridView.builder(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12),
+                    padding: EdgeInsets.all(16),
+                    shrinkWrap: true,
+                    itemCount: snapshot.data.length,
+                    itemBuilder: (context, index) {
+                      return _petItem(snapshot.data[index], context);
+                    },
+                  ),
+                );
+              } else {
+                return Center(child: CircularProgressIndicator());
+              }
+            },
           ),
         ],
       ),
@@ -139,5 +160,33 @@ class ChoosePet extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<List<Pet>> _loadMyPet() async {
+    String token = await getStringValue('token');
+    try {
+      http.Response response = await http.get(
+        Apis.getMyPets,
+        headers: {
+          HttpHeaders.contentTypeHeader: 'application/json',
+          HttpHeaders.authorizationHeader: 'Bearer $token',
+        },
+      ).timeout(Duration(seconds: 30));
+      print('_loadMyPets:   ' + response.statusCode.toString());
+      if (response.statusCode == 200) {
+        var parsedJson = jsonDecode(response.body);
+        print(parsedJson);
+        return PetsList.fromJson(parsedJson).pets;
+      } else if (response.statusCode == 500) {
+        showError('Server error, please try again latter.');
+        return null;
+      } else {
+        return null;
+      }
+    } on TimeoutException catch (e) {
+      return null;
+    } on SocketException catch (e) {
+      return null;
+    }
   }
 }

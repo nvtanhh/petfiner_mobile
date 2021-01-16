@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image/image.dart' as Im;
+import 'package:pet_finder/core/apis.dart';
 import 'package:pet_finder/core/models/user.dart';
 
 class EditProfile extends StatefulWidget {
@@ -99,11 +100,11 @@ class _EditProfileState extends State<EditProfile> {
                   ),
                 ),
                 radius: 50,
-                backgroundImage: widget.user?.avatar == null
-                    ? imageFile == null
+                backgroundImage: imageFile != null
+                    ? widget.user?.avatar == null
                         ? AssetImage('assets/images/sample/avt.jpg')
                         : FileImage(imageFile)
-                    : CachedNetworkImage(imageUrl: widget.user.avatar),
+                    : NetworkImage(Apis.avatarDirUrl + widget.user.avatar),
               ),
             ],
           ),

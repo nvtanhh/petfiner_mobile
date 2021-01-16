@@ -1,6 +1,9 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:pet_finder/core/apis.dart';
 import 'package:pet_finder/core/models/post.dart';
 import 'package:pet_finder/ui/post_detail.dart';
+import 'package:pet_finder/utils.dart';
 
 class PostMapWidget extends StatelessWidget {
   final Post post;
@@ -15,7 +18,8 @@ class PostMapWidget extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => PostDetail(post)),
+          MaterialPageRoute(
+              builder: (context) => PostDetail(post, from: 'map_')),
         );
       },
       child: Container(
@@ -43,13 +47,20 @@ class PostMapWidget extends StatelessWidget {
               child: Stack(
                 children: [
                   Hero(
-                    tag: post.imageUrls[0],
+                    tag: post.imageUrls.isNotEmpty
+                        ? 'map_' + post.id.toString() + post.imageUrls[0]
+                        : 'map_' + 'iamgeUrl' + post.id.toString(),
                     child: Container(
                       // height: 150,
                       width: size.width * 0.3,
                       decoration: BoxDecoration(
                         image: DecorationImage(
-                          image: AssetImage(post.imageUrls[0]),
+                          image: (post.imageUrls == null &&
+                                  post.imageUrls.length == 0)
+                              ? AssetImage('assets/images/sample/animal.png')
+                              : CachedNetworkImageProvider(
+                                  Apis.baseUrlOnline + post.imageUrls[0],
+                                ),
                           fit: BoxFit.cover,
                         ),
                         borderRadius: BorderRadius.only(
@@ -62,7 +73,7 @@ class PostMapWidget extends StatelessWidget {
                   Align(
                     alignment: Alignment.topRight,
                     child: Padding(
-                      padding: EdgeInsets.all(6),
+                      padding: EdgeInsets.all(8),
                       child: GestureDetector(
                         onTap: () {},
                         child: Container(
@@ -70,14 +81,14 @@ class PostMapWidget extends StatelessWidget {
                           width: 20,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: post.pet.favorite
+                            color: post.isFavorite
                                 ? Colors.red[400]
                                 : Colors.white,
                           ),
                           child: Icon(
                             Icons.favorite,
                             size: 16,
-                            color: post.pet.favorite
+                            color: post.isFavorite
                                 ? Colors.white
                                 : Colors.grey[300],
                           ),
@@ -149,27 +160,37 @@ class PostMapWidget extends StatelessWidget {
                         SizedBox(
                           width: 4,
                         ),
-                        Flexible(
-                          child: Text(
-                            post.pet.address.toString(),
-                            // overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 12,
-                            ),
-                            maxLines: 1, overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
+                        FutureBuilder(
+                          future: getAdress(post.pet.address.address),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              return Flexible(
+                                child: Text(
+                                  snapshot.data,
+                                  // overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 12,
+                                  ),
+                                  maxLines: 1, overflow: TextOverflow.ellipsis,
+                                ),
+                              );
+                            } else
+                              return Container();
+                          },
+                        )
                       ],
                     ),
                     SizedBox(height: 4),
                     Text(
-                      " (" + post.pet.distance + "km)",
+                      post.distance != null
+                          ? "(" + post.distance.toStringAsFixed(2) + " km)"
+                          : '',
                       // overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: Colors.grey[600],
                         fontSize: 12,
-                        // fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],

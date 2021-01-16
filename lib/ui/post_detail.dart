@@ -1,11 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:pet_finder/core/apis.dart';
 import 'package:pet_finder/core/models/pet.dart';
 import 'package:pet_finder/core/models/post.dart';
 import 'package:pet_finder/ui/profile_screen.dart';
-import 'package:pet_finder/ui/widgets/user_avatar.dart';
 import 'package:pet_finder/ui/pet_detail.dart';
+import 'package:pet_finder/utils.dart';
 
 class PostDetail extends StatefulWidget {
   final Post post;
@@ -25,11 +26,7 @@ class _PostDetailState extends State<PostDetail> {
   @override
   Widget build(BuildContext context) {
     Pet pet = widget.post.pet;
-    String tagPrefix = widget.from == 'grid'
-        ? 'grid_'
-        : widget.from == 'card'
-            ? 'card_'
-            : '';
+    String tagPrefix = widget.from ?? '';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -69,7 +66,9 @@ class _PostDetailState extends State<PostDetail> {
                         itemCount: widget.post.imageUrls.length,
                         itemBuilder: (context, index) => index == 0
                             ? Hero(
-                                tag: tagPrefix + widget.post.imageUrls[index],
+                                tag: tagPrefix +
+                                    widget.post.id.toString() +
+                                    widget.post.imageUrls[index],
                                 child: _buildImage(index: index),
                               )
                             : _buildImage(index: index),
@@ -173,27 +172,40 @@ class _PostDetailState extends State<PostDetail> {
                               SizedBox(
                                 width: 4,
                               ),
-                              Text(
-                                pet.address != null
-                                    ? pet.address.address ?? 'Unknow'
-                                    : 'Unknow',
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 14,
-                                ),
+                              FutureBuilder(
+                                future: getAdress(pet.address.address),
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasData) {
+                                    return Text(
+                                      snapshot.data,
+                                      // overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 12,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    );
+                                  } else
+                                    return Container();
+                                },
                               ),
                               SizedBox(
                                 width: 4,
                               ),
                               Text(
-                                pet.distance != null
-                                    ? "(" + pet.distance.toString() + " km)"
+                                widget?.post?.distance != null
+                                    ? "(" +
+                                        widget.post.distance
+                                            .toStringAsFixed(2) +
+                                        " km)"
                                     : '',
                                 style: TextStyle(
                                   color: Colors.grey[600],
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
                                 ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),
@@ -255,13 +267,17 @@ class _PostDetailState extends State<PostDetail> {
                 ),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    widget.post.content ?? '',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 14,
-                    ),
-                  ),
+                  child: !widget.post.content.contains('<')
+                      ? Text(
+                          widget.post.content ?? '',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                          ),
+                        )
+                      : Html(
+                          data: widget.post.content ?? '',
+                        ),
                 ),
                 SizedBox(
                   height: 16,
@@ -280,44 +296,51 @@ class _PostDetailState extends State<PostDetail> {
                                   builder: (context) =>
                                       ProfileScreen(user: pet?.owner)));
                         },
-                        child: Row(
-                          children: [
-                            // UserAvatar(pet?.owner?.avatar ?? ''),
-                            CircleAvatar(
-                              backgroundColor: Colors.blue[200],
-                              radius: 30,
-                              backgroundImage: pet.owner.avatar == null
-                                  ? AssetImage('assets/images/user_avatar.jpg')
-                                  : CachedNetworkImageProvider(
-                                      Apis.avatarDirUrl + pet.owner.avatar),
-                            ),
-                            SizedBox(
-                              width: 12,
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Posted by",
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                        child: Container(
+                          width: MediaQuery.of(context).size.width * 0.5,
+                          child: Row(
+                            children: [
+                              // UserAvatar(pet?.owner?.avatar ?? ''),
+                              CircleAvatar(
+                                backgroundColor: Colors.blue[200],
+                                radius: 30,
+                                backgroundImage: pet.owner.avatar == null
+                                    ? AssetImage(
+                                        'assets/images/user_avatar.jpg')
+                                    : CachedNetworkImageProvider(
+                                        Apis.avatarDirUrl + pet.owner.avatar),
+                              ),
+                              SizedBox(
+                                width: 12,
+                              ),
+                              Flexible(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Posted by",
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: 4,
+                                    ),
+                                    Text(
+                                      pet?.owner?.name ?? 'Unknow',
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 14,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
                                 ),
-                                SizedBox(
-                                  height: 4,
-                                ),
-                                Text(
-                                  pet?.owner?.name ?? 'Unknow',
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       Container(

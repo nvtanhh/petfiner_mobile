@@ -77,6 +77,7 @@ class CategoryList extends StatelessWidget {
                   return PostWidget(
                     post: item,
                     index: null,
+                    from: 'category_',
                   );
                 }).toList(),
               ),

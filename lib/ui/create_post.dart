@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
@@ -12,9 +13,9 @@ import 'package:pet_finder/core/apis.dart';
 import 'package:pet_finder/core/models/pet.dart';
 import 'package:image/image.dart' as Im;
 import 'package:pet_finder/ui/bottom_navigator.dart';
-import 'package:pet_finder/ui/home_screen.dart';
 import 'package:pet_finder/ui/pet_detail.dart';
-import 'package:pet_finder/ui/widgets/pet_widget_small.dart';
+import 'package:http/http.dart' as http;
+import 'package:pet_finder/utils.dart';
 
 class CreatePost extends StatefulWidget {
   final Pet pet;
@@ -72,9 +73,10 @@ class _CreatePostState extends State<CreatePost> {
                 ),
               ),
               onTap: () {
-                EasyLoading.showToast('Post successfully!');
+                _post();
                 Navigator.of(context).pushReplacement(
                     MaterialPageRoute(builder: (context) => MyNavigator()));
+                EasyLoading.showToast('Post successfully!');
               })
         ],
       ),
@@ -256,6 +258,7 @@ class _CreatePostState extends State<CreatePost> {
                         // imageFile = selectedImage;
                         _uploadedImages.add(selectedImage);
                       });
+                    Navigator.pop(context);
                     // compressImage(selectedImage);
                   });
                 },
@@ -333,21 +336,24 @@ class _CreatePostState extends State<CreatePost> {
                 ),
               ),
             ),
-            Flexible(
-              child: Text(
-                widget.pet.name,
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-                style: TextStyle(
-                  color: Colors.grey[800],
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
           ],
         ),
       ),
+    );
+  }
+
+  Future<void> _post() async {
+    String token = await getStringValue('token');
+    http.post(
+      'https://jsonplaceholder.typicode.com/albums',
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+        HttpHeaders.authorizationHeader: 'Bearer $token',
+      },
+      body: jsonEncode(<String, String>{
+        'Content': _contentController.text,
+        'PetId': widget.pet.id.toString(),
+      }),
     );
   }
 }

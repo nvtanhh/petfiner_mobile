@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:pet_finder/core/apis.dart';
 import 'package:pet_finder/core/models/pet.dart';
 
-import 'package:pet_finder/utils.dart' as utils;
 import 'package:pet_finder/ui/pest_indate.dart';
 
 class PetDetail extends StatelessWidget {

@@ -4,7 +4,7 @@ import 'package:pet_finder/ui/pest_indate.dart';
 import 'package:pet_finder/ui/widgets/pet_widget_small.dart';
 
 class PetsManager extends StatefulWidget {
-  List<Pet> pets;
+  final List<Pet> pets;
   PetsManager(this.pets, {Key key}) : super(key: key);
 
   @override
@@ -22,20 +22,21 @@ class _PetsManagerState extends State<PetsManager> {
         ),
       ),
       body: ListView(physics: BouncingScrollPhysics(), children: [
-        ListView.builder(
-          shrinkWrap: true,
-          itemCount: widget.pets.length,
-          padding: EdgeInsets.fromLTRB(16, 20, 16, 0),
-          physics: NeverScrollableScrollPhysics(),
-          itemBuilder: (context, index) => Container(
-            height: 130,
-            margin: EdgeInsets.only(bottom: 15),
-            child: PetWidget(
-                key: ObjectKey(widget.pets[index]),
-                pet: widget.pets[index],
-                showAsColumn: true),
+        if (widget.pets != null)
+          ListView.builder(
+            shrinkWrap: true,
+            itemCount: widget.pets.length,
+            padding: EdgeInsets.fromLTRB(16, 20, 16, 0),
+            physics: NeverScrollableScrollPhysics(),
+            itemBuilder: (context, index) => Container(
+              height: 130,
+              margin: EdgeInsets.only(bottom: 15),
+              child: PetWidget(
+                  key: ObjectKey(widget.pets[index]),
+                  pet: widget.pets[index],
+                  showAsColumn: true),
+            ),
           ),
-        ),
         SizedBox(height: 10),
         _buidAddNewButton()
       ]),

@@ -1,4 +1,5 @@
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 String getDaysAgo(String birhdayStr) {
@@ -43,4 +44,41 @@ Future<String> getStringValue(String key) async {
 Future<void> setStringValue(String key, String value) async {
   SharedPreferences _prefs = await SharedPreferences.getInstance();
   await _prefs.setString(key, value);
+}
+
+Future<String> getAddressFromLatLng(double latitude, double longitude) async {
+  final Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
+  try {
+    List<Placemark> p =
+        await geolocator.placemarkFromCoordinates(latitude, longitude);
+
+    Placemark place = p[0];
+    String subLocality =
+        place.subLocality.isNotEmpty ? place.subLocality + ', ' : '';
+    String locality = place.locality.isNotEmpty ? place.locality + ', ' : '';
+    String administrativeArea = place.administrativeArea.isNotEmpty
+        ? place.administrativeArea + ', '
+        : '';
+    // String country = place.country.isNotEmpty ? place.country + ', ' : '';
+
+    String _currentAddress = subLocality + locality + administrativeArea;
+    return _currentAddress.substring(0, _currentAddress.lastIndexOf(','));
+  } catch (e) {
+    print(e);
+    return '';
+  }
+}
+
+Future<String> getAdress(String position) async {
+  List<String> spliter = position.split(';');
+  double lat = double.parse(spliter[0]);
+  double long = double.parse(spliter[1]);
+  String address;
+  if (spliter.length == 3) {
+    address = spliter[2];
+  }
+  if (address == null) {
+    address = await getAddressFromLatLng(lat, long);
+  }
+  return address;
 }

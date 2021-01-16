@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pet_finder/core/models/vet.dart';
-import 'package:pet_finder/ui/category_list.dart';
 import 'package:pet_finder/ui/search_map_screen.dart';
+import 'package:pet_finder/ui/search_result.dart';
 import 'package:pet_finder/ui/widgets/post_widget.dart';
 
 import 'package:pet_finder/core/models/pet.dart';
@@ -38,136 +38,139 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      isDense: true, // Added this
-                      contentPadding:
-                          EdgeInsets.fromLTRB(8, 8, 30, 8), // Added this
-                      hintText: 'Search',
-                      hintStyle: TextStyle(fontSize: 16),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide(
-                          width: 0,
-                          style: BorderStyle.none,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      decoration: InputDecoration(
+                        isDense: true, // Added this
+                        contentPadding:
+                            EdgeInsets.fromLTRB(8, 8, 30, 8), // Added this
+                        hintText: 'Search',
+                        hintStyle: TextStyle(fontSize: 16),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide(
+                            width: 0,
+                            style: BorderStyle.none,
+                          ),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[100],
+                        prefixIcon: Padding(
+                          padding: EdgeInsets.only(right: 16.0, left: 16),
+                          child: Icon(
+                            Icons.search,
+                            color: Colors.black54,
+                            size: 24,
+                          ),
                         ),
                       ),
-                      filled: true,
-                      fillColor: Colors.grey[100],
-                      // contentPadding: EdgeInsets.only(
-                      //   right: 30,
-                      // ),
-                      prefixIcon: Padding(
-                        padding: EdgeInsets.only(right: 16.0, left: 16),
-                        child: Icon(
-                          Icons.search,
-                          color: Colors.black54,
-                          size: 24,
-                        ),
+                      onSubmitted: _onSearchSubmit,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute<void>(
+                              builder: (_) => MapSearcher()));
+                    },
+                    child: Container(
+                      padding: EdgeInsets.only(left: 16),
+                      child: Icon(
+                        Icons.location_on,
+                        color: Colors.blue[700],
                       ),
                     ),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(context,
-                        MaterialPageRoute<void>(builder: (_) => MapSearcher()));
-                  },
-                  child: Container(
-                    padding: EdgeInsets.only(left: 16),
-                    child: Icon(
-                      Icons.location_on,
-                      color: Colors.blue[700],
+                  )
+                ],
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Pet Category",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[800],
                     ),
                   ),
-                )
-              ],
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "Pet Category",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                  Icon(
+                    Icons.more_horiz,
                     color: Colors.grey[800],
                   ),
-                ),
-                Icon(
-                  Icons.more_horiz,
-                  color: Colors.grey[800],
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    buildPetCategory(PetCategory.DOG, "340", Colors.red[200]),
-                    buildPetCategory(PetCategory.CAT, "210", Colors.blue[200]),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    buildPetCategory(
-                        PetCategory.HAMSTER, "56", Colors.orange[200]),
-                    buildPetCategory(
-                        PetCategory.OTHER, "90", Colors.green[200]),
-                  ],
-                ),
-              ],
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      buildPetCategory(PetCategory.DOG, "340", Colors.red[200]),
+                      buildPetCategory(
+                          PetCategory.CAT, "210", Colors.blue[200]),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      buildPetCategory(
+                          PetCategory.HAMSTER, "56", Colors.orange[200]),
+                      buildPetCategory(
+                          PetCategory.OTHER, "90", Colors.green[200]),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          Padding(
-            padding: EdgeInsets.only(right: 16, left: 16, bottom: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "Vets Near You",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+            Padding(
+              padding: EdgeInsets.only(right: 16, left: 16, bottom: 8, top: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Vets Near You",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[800],
+                    ),
+                  ),
+                  Icon(
+                    Icons.more_horiz,
                     color: Colors.grey[800],
                   ),
-                ),
-                Icon(
-                  Icons.more_horiz,
-                  color: Colors.grey[800],
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Container(
-            // padding: EdgeInsets.symmetric(horizontal: 16),
-            height: 130,
-            child: ListView.builder(
-              shrinkWrap: true,
-              physics: BouncingScrollPhysics(),
-              itemCount: 4,
-              itemBuilder: (context, index) => buildVet(
-                  vets[index].img, vets[index].name, vets[index].phone, index),
-              scrollDirection: Axis.horizontal,
-            ),
-          )
-        ],
+            Container(
+              // padding: EdgeInsets.symmetric(horizontal: 16),
+              height: 130,
+              child: ListView.builder(
+                shrinkWrap: true,
+                physics: BouncingScrollPhysics(),
+                itemCount: 4,
+                itemBuilder: (context, index) => buildVet(vets[index].img,
+                    vets[index].name, vets[index].phone, index),
+                scrollDirection: Axis.horizontal,
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
@@ -179,7 +182,7 @@ class _SearchScreenState extends State<SearchScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => CategoryList(category: category)),
+                builder: (context) => SearchResult(category: category)),
           );
         },
         child: Container(
@@ -268,7 +271,11 @@ class _SearchScreenState extends State<SearchScreen> {
     List<Widget> list = [];
     for (var i = 0; i < posts.length; i++) {
       if (posts[i].pet.newest) {
-        list.add(PostWidget(post: posts[i], index: i));
+        list.add(PostWidget(
+          post: posts[i],
+          index: i,
+          from: 'search2',
+        ));
       }
     }
     return list;
@@ -373,5 +380,13 @@ class _SearchScreenState extends State<SearchScreen> {
         ],
       ),
     );
+  }
+
+  _onSearchSubmit(String value) {
+    Navigator.push(
+        context,
+        new MaterialPageRoute(
+          builder: (context) => SearchResult(query: value),
+        ));
   }
 }
