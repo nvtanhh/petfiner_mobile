@@ -60,7 +60,7 @@ class _PostDetailState extends State<PostDetail> {
           Expanded(
             child: Stack(
               children: [
-                widget.post.imageUrls.isNotEmpty
+                widget.post.imageUrls != null
                     ? PageView.builder(
                         onPageChanged: onPageChanged,
                         itemCount: widget.post.imageUrls.length,

@@ -3,13 +3,17 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pet_finder/core/apis.dart';
 import 'package:pet_finder/core/models/posts_list.dart';
+import 'package:pet_finder/ui/post_detail.dart';
 import 'package:pet_finder/ui/widgets/post_map_widget.dart';
 import 'package:pet_finder/core/models/post.dart';
 import 'package:pet_finder/utils.dart';
@@ -306,7 +310,7 @@ class _MapSearcherState extends State<MapSearcher> {
     if (_initialPosition != null)
       queryParams = {
         'Lat': _initialPosition.latitude?.toString() ?? '',
-        'Lon': _initialPosition.latitude?.toString() ?? '',
+        'Lon': _initialPosition.longitude?.toString() ?? '',
         'Radius': radiusInt,
       };
     String queryString = (queryParams != null)
@@ -320,12 +324,16 @@ class _MapSearcherState extends State<MapSearcher> {
           HttpHeaders.authorizationHeader: 'Bearer $token',
         },
       ).timeout(Duration(seconds: 30));
+      print('url:  ' + Apis.getPostUrl + queryString);
       print('_searchPosts:  ' + response.statusCode.toString());
       if (response.statusCode == 200) {
         var parsedJson = jsonDecode(response.body);
         PostsList postsList = PostsList.fromJson(parsedJson);
 
-        _drawMarker(postsList.posts);
+        postsList.posts.sort((a, b) => (a.distance.compareTo(b.distance)));
+
+        _allMarkers.clear();
+        await _drawMarker(postsList.posts);
         setState(() {
           _posts = postsList.posts;
         });
@@ -355,16 +363,104 @@ class _MapSearcherState extends State<MapSearcher> {
     });
   }
 
-  void _drawMarker(List<Post> posts) {
+  Future<void> _drawMarker(List<Post> posts) async {
     _allMarkers.clear();
     for (Post post in posts) {
+      BitmapDescriptor icon = await _getCustomIcon(
+          Apis.baseUrlOnline + post?.imageUrls[0], post.pet.name);
+
       List<String> spliter = post.pet.address.address.split(';');
       double lat = double.parse(spliter[0]);
       double long = double.parse(spliter[1]);
-      _allMarkers.add(new Marker(
+      _allMarkers.add(
+        new Marker(
           markerId: MarkerId(post.id.toString()),
+          icon: icon,
           position: LatLng(lat, long),
-          infoWindow: InfoWindow(title: post.pet.name)));
+          infoWindow: InfoWindow(
+            title: post.pet.name,
+            onTap: () {
+              Navigator.push(
+                  context,
+                  new MaterialPageRoute(
+                      builder: (context) =>
+                          PostDetail(post, from: "mapMarker_")));
+            },
+          ),
+        ),
+      );
     }
+  }
+
+  Future<BitmapDescriptor> _getCustomIcon(String url, String petName) async {
+    Size size = Size(150.0, 150.0);
+
+    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(pictureRecorder);
+
+    final Radius radius = Radius.circular(size.width / 2);
+
+    final Paint tagPaint = Paint()..color = Colors.blue;
+    final double tagWidth = 40.0;
+
+    final Paint shadowPaint = Paint()..color = Colors.blue.withAlpha(50);
+    final double shadowWidth = 15.0;
+
+    final Paint borderPaint = Paint()..color = Colors.white;
+    final double borderWidth = 3.0;
+
+    final double imageOffset = shadowWidth + borderWidth;
+
+    // Add shadow circle
+    canvas.drawRRect(
+        RRect.fromRectAndCorners(
+          Rect.fromLTWH(0.0, 0.0, size.width, size.height),
+          topLeft: radius,
+          topRight: radius,
+          bottomLeft: radius,
+          bottomRight: radius,
+        ),
+        shadowPaint);
+
+    // // Add tag text
+    // TextPainter textPainter = TextPainter(textDirection: TextDirection.ltr);
+    // textPainter.text = TextSpan(
+    //   text: '1',
+    //   style: TextStyle(fontSize: 20.0, color: Colors.white),
+    // );
+    // textPainter.layout();
+    // textPainter.paint(
+    //     canvas,
+    //     Offset(size.width - tagWidth / 2 - textPainter.width / 2,
+    //         tagWidth / 2 - textPainter.height / 2));
+
+    // Oval for the image
+    Rect oval = Rect.fromLTWH(imageOffset, imageOffset,
+        size.width - (imageOffset * 2), size.height - (imageOffset * 2));
+
+    // Add path for oval image
+    canvas.clipPath(Path()..addOval(oval));
+
+    // Add image
+    final File markerImageFile = await DefaultCacheManager().getSingleFile(url);
+    final Uint8List imageBytes = await markerImageFile.readAsBytes();
+
+    final ui.Codec imageCodec = await ui.instantiateImageCodec(imageBytes);
+    final ui.FrameInfo frameInfo = await imageCodec.getNextFrame();
+
+    ui.Image image = frameInfo.image;
+    paintImage(canvas: canvas, image: image, rect: oval, fit: BoxFit.fitWidth);
+
+    // Convert canvas to image
+    final ui.Image markerAsImage = await pictureRecorder
+        .endRecording()
+        .toImage(size.width.toInt(), size.height.toInt());
+
+    // Convert image to bytes
+    final ByteData byteData =
+        await markerAsImage.toByteData(format: ui.ImageByteFormat.png);
+    final Uint8List uint8List = byteData.buffer.asUint8List();
+
+    return BitmapDescriptor.fromBytes(uint8List);
   }
 }
