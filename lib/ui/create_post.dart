@@ -107,7 +107,7 @@ class _CreatePostState extends State<CreatePost> {
                   showToast('Update successfully!');
                   Navigator.of(context).pop('edited');
                 } else
-                  showError('Post Failed! Please try again.');
+                  showError('Update Failed! Please try again.');
               } else {
                 if (_choosedPostCategory == null) {
                   showError('Please choose your post category first.');
@@ -567,8 +567,8 @@ class _CreatePostState extends State<CreatePost> {
     if (widget.post != null) {
       print('start loadImage.......');
       for (String url in widget.post.imageUrls) {
-        _uploadedImages
-            .add(await DefaultCacheManager().getSingleFile(Apis.baseURL + url));
+        _uploadedImages.add(await DefaultCacheManager()
+            .getSingleFile(Apis.baseURL + url.trim()));
       }
       print('end loadImage.......');
       return true;

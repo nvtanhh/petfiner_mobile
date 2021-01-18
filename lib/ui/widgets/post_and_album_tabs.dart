@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_finder/core/apis.dart';
-import 'package:pet_finder/core/models/pet.dart';
 import 'package:pet_finder/core/models/post.dart';
 import 'package:pet_finder/core/models/posts_list.dart';
 import 'package:pet_finder/ui/post_detail.dart';
@@ -183,7 +182,8 @@ class _PostAndAblumWrapperState extends State<PostAndAblumWrapper> {
                   image: widget.posts[index].imageUrls.length == 0
                       ? AssetImage(_defaultPostImage)
                       : CachedNetworkImageProvider(
-                          Apis.baseURL + widget.posts[index].imageUrls[0],
+                          Apis.baseURL +
+                              widget.posts[index].imageUrls[0].trim(),
                         ),
                   fit: BoxFit.cover,
                 ))),

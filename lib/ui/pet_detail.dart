@@ -1,14 +1,36 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:pet_finder/core/apis.dart';
 import 'package:pet_finder/core/models/pet.dart';
 
 import 'package:pet_finder/ui/pet_indate.dart';
+import 'package:pet_finder/utils.dart';
 
-class PetDetail extends StatelessWidget {
+class PetDetail extends StatefulWidget {
   final Pet pet;
 
   const PetDetail(this.pet, {Key key}) : super(key: key);
+
+  @override
+  _PetDetailState createState() => _PetDetailState();
+}
+
+class _PetDetailState extends State<PetDetail> {
+  Pet pet;
+
+  @override
+  void initState() {
+    super.initState();
+    pet = widget.pet;
+  }
+
+  Future<bool> _checkIsMyPet() async {
+    String storedUserId = await getStringValue('loggedUserId');
+    bool rs =
+        storedUserId != null && int.parse(storedUserId) == widget.pet.owner.id;
+    return rs;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,22 +38,31 @@ class PetDetail extends StatelessWidget {
         appBar: AppBar(
           automaticallyImplyLeading: true,
           title: Text(
-            pet.name,
+            widget.pet.name,
             style: TextStyle(),
           ),
           centerTitle: true,
           actions: [
-            IconButton(
-                icon: Icon(
-                  Icons.edit,
-                  size: 20,
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => PetAddUpdate(pet: pet)),
-                  );
+            FutureBuilder(
+                future: _checkIsMyPet(),
+                builder:
+                    (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+                  if (snapshot.hasData && snapshot.data)
+                    return IconButton(
+                        icon: Icon(
+                          Icons.edit,
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => PetAddUpdate(
+                                    pet: widget.pet, onUpdated: onUpdate)),
+                          );
+                        });
+                  else
+                    return Container(width: 0, height: 0);
                 })
           ],
         ),
@@ -41,21 +72,69 @@ class PetDetail extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(30, 20, 25, 10),
               child: _buildPetInfo(),
             ),
+            FutureBuilder(
+              future: _checkIsMyPet(),
+              builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+                if (snapshot.hasData && !snapshot.data)
+                  return GestureDetector(
+                    onTap: () async {
+                      if (await likePet(widget.pet.id)) {
+                        setState(() {
+                          pet.isFollowed = !pet.isFollowed;
+                        });
+                      } else {
+                        showError('Error, Please try again!');
+                      }
+                    },
+                    child: Container(
+                      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color:
+                            !pet.isFollowed ? Colors.blue : Colors.transparent,
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(5),
+                        ),
+                        border: Border.all(
+                          width: 1,
+                          color:
+                              pet.isFollowed ? Colors.grey[300] : Colors.blue,
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Text(
+                          !pet.isFollowed ? 'Follow' : 'Unfollow',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: !pet.isFollowed
+                                  ? Colors.white
+                                  : Colors.black),
+                        ),
+                      ),
+                    ),
+                  );
+                else
+                  return Container(width: 0, height: 0);
+              },
+            ),
             Padding(
               padding: EdgeInsets.all(8),
               child: Row(
                 children: [
                   buildPetFeature(
-                      pet.age != null
-                          ? pet.age.toString()
+                      widget.pet.age != null
+                          ? widget.pet.age.toString()
                           : 'Uknow' + " months",
                       "Months"),
                   buildPetFeature(
-                      pet.color != null ? pet.color.toString() : 'Uknow',
+                      widget.pet.color != null
+                          ? widget.pet.color.toString()
+                          : 'Uknow',
                       "Color"),
                   buildPetFeature(
-                      pet.weight != null
-                          ? pet.weight.toString() + ' Kg'
+                      widget.pet.weight != null
+                          ? widget.pet.weight.toString() + ' Kg'
                           : 'Uknow',
                       "Weight"),
                 ],
@@ -69,7 +148,7 @@ class PetDetail extends StatelessWidget {
                   Text("More infomation",
                       style: Theme.of(context).textTheme.headline6),
                   SizedBox(height: 5),
-                  Text(pet.bio ?? 'Empty',
+                  Text(widget.pet.bio ?? 'Empty',
                       style: Theme.of(context)
                           .textTheme
                           .bodyText2
@@ -129,10 +208,10 @@ class PetDetail extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         CircleAvatar(
-          backgroundImage: pet?.avatar == null
+          backgroundImage: widget.pet?.avatar == null
               ? AssetImage('assets/images/sample/animal.png')
               : CachedNetworkImageProvider(
-                  Apis.avatarDirUrl + pet.avatar,
+                  Apis.avatarDirUrl + widget.pet.avatar,
                 ),
           radius: 50,
         ),
@@ -148,7 +227,7 @@ class PetDetail extends StatelessWidget {
                 children: [
                   Flexible(
                     child: Text(
-                      pet.name ?? 'Uknow',
+                      widget.pet.name ?? 'Unknow',
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                       style: TextStyle(
@@ -164,7 +243,7 @@ class PetDetail extends StatelessWidget {
                   Container(
                     width: 18,
                     height: 18,
-                    child: pet.gender == 'Male'
+                    child: widget.pet.gender == 'Male'
                         ? Image.asset(
                             'assets/icons/male.png',
                             color: Colors.blue,
@@ -180,7 +259,7 @@ class PetDetail extends StatelessWidget {
                 height: 6,
               ),
               Text(
-                pet.breed ?? 'Uknow breed',
+                widget.pet.breed ?? 'Uknow breed',
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: Colors.grey[600],
@@ -201,8 +280,8 @@ class PetDetail extends StatelessWidget {
                     width: 6,
                   ),
                   Text(
-                    pet.age != null
-                        ? pet.age.toString() + " months"
+                    widget.pet.age != null
+                        ? widget.pet.age.toString() + " months"
                         : 'Uknow age',
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -211,11 +290,17 @@ class PetDetail extends StatelessWidget {
                     ),
                   ),
                 ],
-              )
+              ),
             ],
           ),
         ),
       ],
     );
+  }
+
+  void onUpdate(Pet value) {
+    setState(() {
+      pet = value;
+    });
   }
 }

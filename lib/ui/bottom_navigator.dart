@@ -66,8 +66,6 @@ class _MyNavigatorState extends State<MyNavigator>
     final tab3 = NotifyScreen(key: Key('tab3'));
     final tab4 = ProfileScreen(key: Key('tab4'));
     bodies = [tab1, tab2, tab3, tab4];
-
-    checkPermision();
   }
 
   Future<bool> checkPermision() async {

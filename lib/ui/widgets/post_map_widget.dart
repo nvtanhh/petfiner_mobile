@@ -59,7 +59,7 @@ class PostMapWidget extends StatelessWidget {
                                   post.imageUrls.length == 0)
                               ? AssetImage('assets/images/sample/animal.png')
                               : CachedNetworkImageProvider(
-                                  Apis.baseURL + post.imageUrls[0],
+                                  Apis.baseURL + post.imageUrls[0].trim(),
                                 ),
                           fit: BoxFit.cover,
                         ),
@@ -159,7 +159,7 @@ class PostMapWidget extends StatelessWidget {
                           width: 4,
                         ),
                         FutureBuilder(
-                          future: getAdress(post.pet.address.address),
+                          future: getAdress(post.pet.address),
                           builder: (context, snapshot) {
                             if (snapshot.hasData) {
                               return Flexible(

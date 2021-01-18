@@ -1,5 +1,8 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:pet_finder/core/apis.dart';
+import 'package:pet_finder/core/models/Address.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 String getDaysAgo(String birhdayStr) {
@@ -62,24 +65,52 @@ Future<String> getAddressFromLatLng(double latitude, double longitude) async {
     // String country = place.country.isNotEmpty ? place.country + ', ' : '';
 
     String _currentAddress = subLocality + locality + administrativeArea;
-    return _currentAddress.substring(0, _currentAddress.lastIndexOf(','));
+    return _currentAddress
+        .substring(0, _currentAddress.lastIndexOf(','))
+        .trim();
   } catch (e) {
     print(e);
     return '';
   }
 }
 
-Future<String> getAdress(String position) async {
-  if (position == null) return '';
-  List<String> spliter = position.split(';');
+Future<String> getAdress(Address address) async {
+  if (address == null) return '';
+
+  List<String> spliter = address.addressName.split(';');
+  if (spliter.length == 1) return spliter[0];
   double lat = double.parse(spliter[0]);
   double long = double.parse(spliter[1]);
-  String address;
+  String addressName;
   if (spliter.length == 3) {
-    address = spliter[2];
-  }
-  if (address == null) {
-    address = await getAddressFromLatLng(lat, long);
-  }
-  return address;
+    addressName = spliter[2];
+  } else
+    addressName = await getAddressFromLatLng(lat, long);
+
+  address.lat = lat;
+  address.long = long;
+  address.addressName = addressName;
+
+  return addressName;
+}
+
+Future<bool> likePost(int postId) async {
+  String token = await getStringValue('token');
+  Dio dio = new Dio();
+  dio.options.headers['content-Type'] = 'application/json';
+  dio.options.headers["authorization"] = "Bearer $token";
+  Response response =
+      await dio.post(Apis.likePost.replaceAll('{id}', postId.toString()));
+  print('likePost' + response.statusCode.toString());
+  return response.statusCode == 200;
+}
+
+Future<bool> likePet(int petId) async {
+  String token = await getStringValue('token');
+  Dio dio = new Dio();
+  dio.options.headers['content-Type'] = 'application/json';
+  dio.options.headers["authorization"] = "Bearer $token";
+  Response response =
+      await dio.post(Apis.likePet.replaceAll('{id}', petId.toString()));
+  return response.statusCode == 200;
 }

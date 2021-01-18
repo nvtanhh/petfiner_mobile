@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:pet_finder/core/apis.dart';
@@ -15,6 +16,7 @@ import 'package:pet_finder/ui/bottom_navigator.dart';
 import 'package:http/http.dart' as http;
 import 'package:pet_finder/utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:imei_plugin/imei_plugin.dart';
 
 class LoginScreen extends StatefulWidget {
   final String initEmail;
@@ -152,7 +154,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _login() async {
     EasyLoading.show(status: 'Loading...');
-    print('login url :' + Apis.getLoginUrl);
     if (_email.isNotEmpty && _password.isNotEmpty) {
       try {
         http.Response response = await http
@@ -173,6 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
             print("TOKEN: " + token);
             await EasyLoading.dismiss();
             await _saveToken(token);
+            await _saveFirebaseMassagingToken();
 
             Navigator.pushReplacement(context,
                 new MaterialPageRoute(builder: (context) => MyNavigator()));
@@ -195,6 +197,20 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _saveToken(String token) async {
     SharedPreferences _prefs = await SharedPreferences.getInstance();
     await _prefs.setString('token', token);
+  }
+
+  _saveFirebaseMassagingToken() async {
+    String imei = await ImeiPlugin.getImei();
+    String token = await getStringValue('token');
+    Dio dio = new Dio();
+    dio.options.headers['content-Type'] = 'application/json';
+    dio.options.headers["authorization"] = "Bearer $token";
+    String messagingToken = await getStringValue('firebase_messaging_token');
+    final data = {'serial': imei, 'newToken': messagingToken};
+    print(data);
+    Response response =
+        await dio.post(Apis.saveFirebaseMassagingToken, data: data);
+    print('_saveFirebaseMassagingToken' + response.statusCode.toString());
   }
 }
 

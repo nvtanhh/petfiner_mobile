@@ -10,7 +10,7 @@ class Pet {
   String name;
   String bio;
   String gender;
-  String birhday;
+  DateTime birhday;
   Address address;
   String distance;
   PetCategory category;
@@ -44,13 +44,13 @@ class Pet {
         id = json['Id'],
         bio = json['Bio'],
         gender = json['Gender'] == 1 ? 'Male' : 'Female',
-        address = Address.fromJSON(json['Address']),
+        address = Address.fromStringAddress(json['Address']),
         category = getPetCategory(json['Category']['Id'] as int),
         isFollowed = json['IsFollowed'],
         avatar = json['Avatar'],
         breed = json['Breed'],
         color = json['Color'],
-        weight = double.parse(json['Weight']),
+        weight = json['Weight'] != null ? double.parse(json['Weight']) : null,
         age = json['Age'] + 1,
         owner = User.fromJson(json['Owner']);
 
@@ -60,14 +60,14 @@ class Pet {
       'Name': name,
       'Bio': bio,
       'Gender': gender,
-      'Birhday': birhday,
+      'Birthday': birhday?.toIso8601String(),
       'Address': address.toJson(),
-      'Category': categoryToString(category),
+      'Category': {'Id': categoryToId(category)},
       'Avatar': avatar,
       'Breed': breed,
       'Color': color,
       'Weight': weight,
-      'Owner': owner.toJson()
+      'Owner': owner?.toJson()
     };
   }
 
@@ -90,22 +90,22 @@ class Pet {
     }
   }
 
-  String categoryToString(PetCategory category) {
+  int categoryToId(PetCategory category) {
     switch (category) {
       case PetCategory.DOG:
-        return 'Dog';
+        return 1;
         break;
       case PetCategory.CAT:
-        return 'Cat';
+        return 2;
         break;
       case PetCategory.OTHER:
-        return 'Other';
+        return 4;
         break;
       case PetCategory.HAMSTER:
-        return 'Hamster';
+        return 3;
         break;
     }
-    return null;
+    return 4;
   }
 
   Map<String, dynamic> toIdJson() {

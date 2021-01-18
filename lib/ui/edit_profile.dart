@@ -1,18 +1,23 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image/image.dart' as Im;
 import 'package:pet_finder/core/apis.dart';
 import 'package:pet_finder/core/models/user.dart';
+import 'package:pet_finder/utils.dart';
+import 'package:http/http.dart' as http;
 
 class EditProfile extends StatefulWidget {
   final User user;
 
-  EditProfile(this.user);
+  final ValueChanged<User> onUpdated;
+
+  EditProfile(this.user, {this.onUpdated});
 
   @override
   _EditProfileState createState() => _EditProfileState();
@@ -22,16 +27,16 @@ class _EditProfileState extends State<EditProfile> {
   final picker = ImagePicker();
   File imageFile;
   final _nameController = TextEditingController();
-  final _bioController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
+
+  String token;
 
   @override
   void initState() {
     super.initState();
     if (widget.user != null) {
       _nameController.text = widget.user.name;
-      _bioController.text = widget.user.bio;
       _emailController.text = widget.user.email;
       _phoneController.text = widget.user.phone;
     }
@@ -70,8 +75,8 @@ class _EditProfileState extends State<EditProfile> {
               padding: const EdgeInsets.only(right: 12.0),
               child: Icon(Icons.done),
             ),
-            onTap: () {
-              Navigator.pop(context);
+            onTap: () async {
+              await _onSubmit();
             },
           )
         ],
@@ -101,10 +106,10 @@ class _EditProfileState extends State<EditProfile> {
                 ),
                 radius: 50,
                 backgroundImage: imageFile != null
-                    ? widget.user?.avatar == null
+                    ? FileImage(imageFile)
+                    : widget?.user?.avatar == null
                         ? AssetImage('assets/images/sample/avt.jpg')
-                        : FileImage(imageFile)
-                    : NetworkImage(Apis.avatarDirUrl + widget.user.avatar),
+                        : NetworkImage(Apis.avatarDirUrl + widget.user.avatar),
               ),
             ],
           ),
@@ -120,28 +125,6 @@ class _EditProfileState extends State<EditProfile> {
                   controller: _nameController,
                   decoration: InputDecoration(
                       labelText: 'Name', labelStyle: TextStyle(fontSize: 14)),
-                  onChanged: ((value) {
-                    setState(() {
-                      _nameController.text = value;
-                    });
-                  }),
-                ),
-              ),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                child: TextField(
-                  controller: _bioController,
-                  // maxLines: 1,
-                  decoration: InputDecoration(
-                    labelText: 'Bio',
-                    labelStyle: TextStyle(fontSize: 14),
-                  ),
-                  onChanged: ((value) {
-                    setState(() {
-                      _bioController.text = value;
-                    });
-                  }),
                 ),
               ),
               SizedBox(
@@ -167,11 +150,6 @@ class _EditProfileState extends State<EditProfile> {
                     labelStyle: TextStyle(fontSize: 14),
                   ),
                   readOnly: true,
-                  onChanged: ((value) {
-                    setState(() {
-                      _emailController.text = value;
-                    });
-                  }),
                 ),
               ),
               Padding(
@@ -182,28 +160,28 @@ class _EditProfileState extends State<EditProfile> {
                     labelText: 'Phone Number',
                     labelStyle: TextStyle(fontSize: 14),
                   ),
-                  onChanged: ((value) {
-                    setState(() {
-                      _phoneController.text = value;
-                    });
-                  }),
                 ),
               )
             ],
           ),
-          Container(
-            margin: EdgeInsets.all(16),
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-                borderRadius: BorderRadius.all(Radius.circular(10))),
-            alignment: Alignment.center,
-            child: Text(
-              'Submit',
-              style: Theme.of(context)
-                  .textTheme
-                  .button
-                  .copyWith(color: Colors.white),
+          GestureDetector(
+            onTap: () async {
+              await _onSubmit();
+            },
+            child: Container(
+              margin: EdgeInsets.all(16),
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor,
+                  borderRadius: BorderRadius.all(Radius.circular(10))),
+              alignment: Alignment.center,
+              child: Text(
+                'Submit',
+                style: Theme.of(context)
+                    .textTheme
+                    .button
+                    .copyWith(color: Colors.white),
+              ),
             ),
           )
         ],
@@ -280,5 +258,62 @@ class _EditProfileState extends State<EditProfile> {
       imageFile = newim2;
     });
     print('done');
+  }
+
+  Future<User> _updateProfile() async {
+    print('start posting...............');
+    try {
+      token = await getStringValue('token');
+      print('start upload iamges...............');
+      String uploadedImageUrl;
+      if ((imageFile != null)) uploadedImageUrl = await uploadImages();
+      print('End upload iamges...............');
+      Response response;
+
+      widget.user.avatar = uploadedImageUrl ?? widget.user.avatar;
+      widget.user.name = _nameController.text;
+      widget.user.phone = _phoneController.text;
+
+      final data = widget.user.toJson();
+
+      Dio dio = new Dio();
+      dio.options.headers['content-Type'] = 'application/json';
+      dio.options.headers["authorization"] = "Bearer $token";
+      response = await dio.put(Apis.editProfile, data: data);
+      if (response.statusCode == 200) {
+        return User.fromJson(response.data);
+      } else
+        return null;
+    } catch (e) {
+      print(e);
+      return null;
+    }
+  }
+
+  Future<String> uploadImages() async {
+    if (imageFile != null) {
+      var request =
+          http.MultipartRequest("POST", Uri.parse(Apis.uploadAvatarUrl));
+      request.headers['content-Type'] = 'application/json';
+      request.headers["authorization"] = "Bearer $token";
+      var pic = await http.MultipartFile.fromPath("Images", imageFile.path);
+      request.files.add(pic);
+      var response = await request.send();
+      var responseData = await response.stream.toBytes();
+      var responseString = String.fromCharCodes(responseData);
+      return responseString.toString().replaceAll('"', '');
+    } else
+      return '';
+  }
+
+  _onSubmit() async {
+    EasyLoading.show(status: 'Updating...', dismissOnTap: true);
+    User editedUser = await _updateProfile();
+    if (editedUser != null) {
+      showToast('Update successfully!');
+      if (widget.onUpdated != null) widget.onUpdated(editedUser);
+      Navigator.of(context).pop();
+    } else
+      showError('Update Failed! Please try again.');
   }
 }

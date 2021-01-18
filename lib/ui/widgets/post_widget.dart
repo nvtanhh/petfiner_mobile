@@ -88,7 +88,7 @@ class _PostWidgetState extends State<PostWidget> {
                                   post.imageUrls.length == 0)
                               ? AssetImage('assets/images/sample/animal.png')
                               : CachedNetworkImageProvider(
-                                  Apis.baseURL + post.imageUrls[0],
+                                  Apis.baseURL + post.imageUrls[0].trim(),
                                 ),
                           fit: BoxFit.cover,
                         ),
@@ -104,7 +104,14 @@ class _PostWidgetState extends State<PostWidget> {
                     child: Padding(
                       padding: EdgeInsets.all(12),
                       child: GestureDetector(
-                        onTap: () {},
+                        onTap: () async {
+                          if (await likePost(post.id)) {
+                            setState(() {
+                              post.isLiked = !post.isLiked;
+                            });
+                            print('like');
+                          }
+                        },
                         child: Container(
                           height: 30,
                           width: 30,
@@ -171,7 +178,7 @@ class _PostWidgetState extends State<PostWidget> {
                             width: 4,
                           ),
                           FutureBuilder(
-                            future: getAdress(post.pet.address.address),
+                            future: getAdress(post.pet.address),
                             builder: (context, snapshot) {
                               if (snapshot.hasData) {
                                 return Flexible(

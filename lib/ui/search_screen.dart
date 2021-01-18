@@ -1,11 +1,12 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:pet_finder/core/apis.dart';
 import 'package:pet_finder/core/models/vet.dart';
 import 'package:pet_finder/ui/search_map_screen.dart';
 import 'package:pet_finder/ui/search_result.dart';
-import 'package:pet_finder/ui/widgets/post_widget.dart';
 
 import 'package:pet_finder/core/models/pet.dart';
-import 'package:pet_finder/core/models/post.dart';
+import 'package:pet_finder/utils.dart';
 
 class SearchScreen extends StatefulWidget {
   SearchScreen({Key key}) : super(key: key);
@@ -18,9 +19,9 @@ class _SearchScreenState extends State<SearchScreen> {
 
   List<Vet> vets = [
     new Vet(
-        img: "assets/images/vets/vet_0.png",
-        name: "Animal Emergency Hospital",
-        phone: "(369) 133-8956"),
+        img: "assets/images/vets/nonglam.png",
+        name: "Nong Lam University Vet",
+        phone: "028 3896 7596"),
     new Vet(
         img: "assets/images/vets/vet_1.png",
         name: "Artemis Veterinary Center",
@@ -96,7 +97,7 @@ class _SearchScreenState extends State<SearchScreen> {
             Padding(
               padding: EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 8),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Text(
                     "Pet Category",
@@ -106,41 +107,48 @@ class _SearchScreenState extends State<SearchScreen> {
                       color: Colors.grey[800],
                     ),
                   ),
-                  Icon(
-                    Icons.more_horiz,
-                    color: Colors.grey[800],
-                  ),
                 ],
               ),
             ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      buildPetCategory(PetCategory.DOG, "340", Colors.red[200]),
-                      buildPetCategory(
-                          PetCategory.CAT, "210", Colors.blue[200]),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      buildPetCategory(
-                          PetCategory.HAMSTER, "56", Colors.orange[200]),
-                      buildPetCategory(
-                          PetCategory.OTHER, "90", Colors.green[200]),
-                    ],
-                  ),
-                ],
-              ),
+            FutureBuilder(
+              future: _countPost(),
+              builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+                if (snapshot.hasData)
+                  return Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            buildPetCategory(PetCategory.DOG,
+                                snapshot.data[0].toString(), Colors.red[200]),
+                            buildPetCategory(PetCategory.CAT,
+                                snapshot.data[1].toString(), Colors.blue[200]),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            buildPetCategory(
+                                PetCategory.HAMSTER,
+                                snapshot.data[2].toString(),
+                                Colors.orange[200]),
+                            buildPetCategory(PetCategory.OTHER,
+                                snapshot.data[3].toString(), Colors.green[200]),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                else
+                  return Container(width: 0, height: 0);
+              },
             ),
             Padding(
               padding: EdgeInsets.only(right: 16, left: 16, bottom: 8, top: 16),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Text(
                     "Vets Near You",
@@ -149,10 +157,6 @@ class _SearchScreenState extends State<SearchScreen> {
                       fontWeight: FontWeight.bold,
                       color: Colors.grey[800],
                     ),
-                  ),
-                  Icon(
-                    Icons.more_horiz,
-                    color: Colors.grey[800],
                   ),
                 ],
               ),
@@ -388,5 +392,17 @@ class _SearchScreenState extends State<SearchScreen> {
         new MaterialPageRoute(
           builder: (context) => SearchResult(query: value),
         ));
+  }
+
+  Future<List<int>> _countPost() async {
+    String token = await getStringValue('token');
+    Dio dio = new Dio();
+    dio.options.headers['content-Type'] = 'application/json';
+    dio.options.headers["authorization"] = "Bearer $token";
+    Response response = await dio.get(Apis.countPost);
+    if (response.statusCode == 200)
+      return response.data.cast<int>();
+    else
+      return null;
   }
 }

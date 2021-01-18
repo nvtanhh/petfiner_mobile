@@ -15,13 +15,16 @@ class PetWidget extends StatelessWidget {
   final bool isExpanded;
 
   final bool tiny;
+
+  final Function() onDelete;
   const PetWidget(
       {Key key,
       this.pet,
       this.last = false,
       this.showAsColumn = false,
       this.isExpanded,
-      this.tiny = false})
+      this.tiny = false,
+      this.onDelete})
       : super(key: key);
 
   @override
@@ -168,7 +171,7 @@ class PetWidget extends StatelessWidget {
               Column(
                 children: [
                   GestureDetector(
-                    onTap: () => _showDeleteDialog(context, pet.name),
+                    onTap: () => {if (onDelete != null) onDelete()},
                     child: Container(
                       margin: const EdgeInsets.only(top: 25),
                       padding: EdgeInsets.only(top: 5, left: 5, bottom: 5),
@@ -185,56 +188,5 @@ class PetWidget extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  _showDeleteDialog(BuildContext context, String name) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return new AlertDialog(
-          title: Text("Delete confirm."),
-          content: Text(
-            "Are you sure to delete $name?",
-            style: TextStyle(
-                fontWeight: FontWeight.w400,
-                fontSize: 16,
-                color: Colors.black54),
-          ),
-          actions: <Widget>[
-            ButtonTheme(
-              //minWidth: double.infinity,
-              child: RaisedButton(
-                elevation: 3.0,
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text('Cancel'),
-                color: Colors.grey[400],
-                textColor: const Color(0xffffffff),
-              ),
-            ),
-            ButtonTheme(
-              //minWidth: double.infinity,
-              child: RaisedButton(
-                elevation: 3.0,
-                onPressed: () async {
-                  Navigator.of(context).pop();
-                  await _deletePet();
-                  EasyLoading.showToast("Deleted!",
-                      duration: new Duration(seconds: 1));
-                },
-                child: Text('Delete'),
-                color: Theme.of(context).primaryColor,
-                textColor: const Color(0xffffffff),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _deletePet() async {
-    print('delete');
   }
 }

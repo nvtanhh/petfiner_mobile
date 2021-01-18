@@ -49,6 +49,7 @@ dependencies:
   flutter_local_notifications: ^3.0.2
   share: ^0.6.5+4
   screenshot: ^0.2.0
+  imei_plugin: ^1.2.0
 
 
 dev_dependencies:

@@ -192,7 +192,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Navigator.push(
                           context,
                           new MaterialPageRoute(
-                              builder: (context) => EditProfile(user)));
+                              builder: (context) => EditProfile(
+                                    user,
+                                    onUpdated: _onUpdatedUser,
+                                  )));
                   },
                   child: Container(
                     alignment: Alignment.center,
@@ -236,7 +239,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: ((context) => PetsManager(_myPets))));
+                    builder: ((context) =>
+                        PetsManager(_myPets, updatedPet: _loadMyPets))));
           },
           child: Container(
             padding: EdgeInsets.symmetric(vertical: 10),
@@ -405,16 +409,104 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadData() async {
     token = await getStringValue('token');
-    if (widget.user == null)
+    if (widget.user == null) {
       _loadLoggedUser();
-    else
+      _loadMyPets();
+      _loadMyPosts();
+    } else {
       user = widget.user;
-    _loadMyPets();
-    _loadMyPosts();
+      _loadUserPets();
+      _loadUserPosts();
+    }
   }
 
   Future<void> _refresh() async {
     _myPets = null;
     _loadData();
+  }
+
+  void _onUpdatedUser(User value) {
+    setState(() {
+      user = value;
+    });
+  }
+
+  void _loadUserPets() async {
+    try {
+      http.Response response = await http.get(
+        Apis.getUserPets.replaceAll('{id}', user.id.toString()),
+        headers: {
+          HttpHeaders.contentTypeHeader: 'application/json',
+          HttpHeaders.authorizationHeader: 'Bearer $token',
+        },
+      ).timeout(Duration(seconds: 30));
+      print('_loadUserPets:   ' + response.statusCode.toString());
+      if (response.statusCode == 200) {
+        var parsedJson = jsonDecode(response.body);
+        setState(() {
+          _myPets = PetsList.fromJson(parsedJson).pets;
+        });
+      } else if (response.statusCode == 500) {
+        showError('Server error, please try again latter.');
+        setState(() {
+          petError = true;
+        });
+      } else {
+        setState(() {
+          petError = true;
+        });
+      }
+    } on TimeoutException catch (e) {
+      setState(() {
+        petError = true;
+      });
+      showError(e.toString());
+    } on SocketException catch (e) {
+      setState(() {
+        petError = true;
+      });
+      showError(e.toString());
+    }
+  }
+
+  Future<void> _loadUserPosts() async {
+    String token = await getStringValue('token');
+
+    try {
+      http.Response response = await http.get(
+        Apis.getUserPosts.replaceAll('{id}', user.id.toString()),
+        headers: {
+          HttpHeaders.contentTypeHeader: 'application/json',
+          HttpHeaders.authorizationHeader: 'Bearer $token',
+        },
+      ).timeout(Duration(seconds: 30));
+      print('_loadUserPosts: ' + response.statusCode.toString());
+      if (response.statusCode == 200) {
+        var parsedJson = jsonDecode(response.body);
+        setState(() {
+          _myPosts = PostsList.fromJson(parsedJson).posts;
+        });
+      } else if (response.statusCode == 500) {
+        showError('Server error, please try again latter.');
+        setState(() {
+          postError = true;
+        });
+      } else {
+        setState(() {
+          postError = true;
+        });
+      }
+    } on TimeoutException catch (e) {
+      setState(() {
+        postError = true;
+      });
+      showError(e.toString());
+    } on SocketException catch (e) {
+      setState(() {
+        postError = true;
+      });
+      showError(e.toString());
+      print(e.toString());
+    }
   }
 }

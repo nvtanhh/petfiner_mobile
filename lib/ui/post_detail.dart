@@ -244,7 +244,7 @@ class _PostDetailState extends State<PostDetail> {
                                     width: 4,
                                   ),
                                   FutureBuilder(
-                                    future: getAdress(pet.address.address),
+                                    future: getAdress(pet.address),
                                     builder: (context, snapshot) {
                                       if (snapshot.hasData) {
                                         return Text(
@@ -282,19 +282,30 @@ class _PostDetailState extends State<PostDetail> {
                             ],
                           ),
                         ),
-                        Container(
-                          height: 50,
-                          width: 50,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color:
-                                post.isLiked ? Colors.red[400] : Colors.white,
-                          ),
-                          child: Icon(
-                            Icons.favorite,
-                            size: 24,
-                            color:
-                                post.isLiked ? Colors.white : Colors.grey[300],
+                        GestureDetector(
+                          onTap: () async {
+                            if (await likePost(post.id)) {
+                              setState(() {
+                                post.isLiked = !post.isLiked;
+                              });
+                              print('like');
+                            }
+                          },
+                          child: Container(
+                            height: 50,
+                            width: 50,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color:
+                                  post.isLiked ? Colors.red[400] : Colors.white,
+                            ),
+                            child: Icon(
+                              Icons.favorite,
+                              size: 24,
+                              color: post.isLiked
+                                  ? Colors.white
+                                  : Colors.grey[300],
+                            ),
                           ),
                         ),
                       ],
@@ -497,7 +508,7 @@ class _PostDetailState extends State<PostDetail> {
   Widget _buildImage({int index}) {
     String imageUrl = index == null
         ? _defaultPostImage
-        : Apis.baseURL + post.imageUrls[index];
+        : Apis.baseURL + post.imageUrls[index].trim();
     return Container(
       decoration: BoxDecoration(
         image: DecorationImage(
@@ -583,9 +594,9 @@ class _PostDetailState extends State<PostDetail> {
                 elevation: 3.0,
                 onPressed: () async {
                   Navigator.of(context).pop();
+                  if (widget.onDelete != null) widget.onDelete();
                   if (await _deletePost()) {
                     Navigator.of(context).pop('deleted');
-                    if (widget.onDelete != null) widget.onDelete();
                     EasyLoading.showToast("Deleted!",
                         duration: new Duration(seconds: 1));
                   } else

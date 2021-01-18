@@ -4,6 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:pet_finder/utils.dart';
 
 //notificatiopn handler
 // final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -101,9 +102,10 @@ class AppPushsState extends State<AppPushs> {
         onResume: (Map<String, dynamic> message) async {
           print('onResume: $message');
         });
-    _firebaseMessaging.getToken().then((value) {
+    _firebaseMessaging.getToken().then((value) async {
       print("FirebaseMessaging token: $value");
       appToken = value;
+      await setStringValue('firebase_messaging_token', value);
     });
     _firebaseMessaging.requestNotificationPermissions(
         const IosNotificationSettings(sound: true, badge: true, alert: true));

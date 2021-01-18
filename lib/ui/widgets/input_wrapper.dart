@@ -7,6 +7,8 @@ class InputContainerWrapper extends StatelessWidget {
   final Function onTab;
   final Widget prefix;
   final bool isReadOnly;
+
+  final TextInputType keyboardType;
   const InputContainerWrapper(
       {Key key,
       @required this.controller,
@@ -14,7 +16,8 @@ class InputContainerWrapper extends StatelessWidget {
       this.maxLines = 1,
       this.onTab,
       this.prefix,
-      this.isReadOnly = false})
+      this.isReadOnly = false,
+      this.keyboardType = TextInputType.text})
       : super(key: key);
 
   @override
@@ -22,6 +25,7 @@ class InputContainerWrapper extends StatelessWidget {
     return Container(
       margin: EdgeInsets.only(bottom: 15),
       child: TextField(
+        keyboardType: keyboardType,
         onTap: onTab,
         controller: controller,
         decoration: InputDecoration(

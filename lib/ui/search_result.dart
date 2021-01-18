@@ -215,7 +215,7 @@ class _SearchResultState extends State<SearchResult> {
       if (MyLocation().haveData) 'Lon': MyLocation().long?.toString() ?? '',
       if (widget.query != null && widget.query.isNotEmpty)
         'SearchQuery': widget.query,
-      if (categoryId != null) 'PetCategoryId': categoryId.toString(),
+      if (widget.category != null) 'PetCategoryId': categoryId.toString(),
     };
     String queryString = (queryParams != null)
         ? '?' + Uri(queryParameters: queryParams).query

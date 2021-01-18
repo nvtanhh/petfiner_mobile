@@ -16,13 +16,17 @@ import 'package:image/image.dart' as Im;
 import 'package:pet_finder/locationpiker/widgets/widgets.dart';
 import 'package:pet_finder/ui/widgets/input_wrapper.dart';
 import 'package:pet_finder/utils.dart';
-import 'package:share/share.dart';
 import 'package:http/http.dart' as http;
 
 class PetAddUpdate extends StatefulWidget {
   final Pet pet;
 
-  PetAddUpdate({Key key, this.pet}) : super(key: key);
+  final ValueChanged<Pet> onUpdated;
+
+  ValueChanged<Pet> onCreated;
+
+  PetAddUpdate({Key key, this.pet, this.onUpdated, this.onCreated})
+      : super(key: key);
 
   @override
   _PetAddUpdateState createState() => _PetAddUpdateState();
@@ -33,10 +37,12 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
 
   Address petAddress;
 
+  DateTime _petBrithday;
+
   _PetAddUpdateState();
   List<String> _genders = ['Male', 'Female'];
 
-  PetCategory petCategory;
+  PetCategory _petCategory;
 
   final picker = ImagePicker();
   File imageFile;
@@ -47,6 +53,7 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
   final _breedController = TextEditingController();
   final _birthdayController = TextEditingController();
   final _addressController = TextEditingController();
+  Future _getAddressFuture;
 
   @override
   void initState() {
@@ -55,11 +62,17 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
       _nameController.text = widget.pet.name;
       _bioController.text = widget.pet.bio;
       _selectedgender = widget.pet.gender.capitalize();
-      _birthdayController.text = widget.pet.birhday;
+      _birthdayController.text = widget.pet.birhday != null
+          ? DateFormat('yyyy-MM-dd').format(widget.pet.birhday)
+          : '';
       _colorController.text = widget.pet.color;
       _weightController.text =
           widget.pet.weight == null ? '' : widget.pet.weight.toString();
       _breedController.text = widget.pet.breed;
+
+      petAddress = widget.pet.address;
+
+      // _getAddressFuture = getAdress(widget?.pet?.address);
     }
   }
 
@@ -79,12 +92,8 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
                 Icons.done,
                 size: 20,
               ),
-              onPressed: () {
-                if (widget.pet != null) {
-                  _indatePet(isUpdate: true);
-                } else {}
-                // EasyLoading.showToast('Save successfully!');
-                // Navigator.pop(context);
+              onPressed: () async {
+                await _onSubmit();
               })
         ],
       ),
@@ -102,7 +111,7 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (petCategory == null)
+              if (_petCategory == null)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 15),
                   child: Text(
@@ -116,15 +125,15 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
           ),
         GestureDetector(
           onTap: () {
-            if (widget.pet == null && petCategory == null) {
+            if (widget.pet == null && _petCategory == null) {
               EasyLoading.showToast(
                   'Choose what kind of your pet first, please!');
             }
           },
           child: Opacity(
-            opacity: (widget.pet == null && petCategory == null) ? .4 : 1,
+            opacity: (widget.pet == null && _petCategory == null) ? .4 : 1,
             child: AbsorbPointer(
-              absorbing: (widget.pet == null && petCategory == null),
+              absorbing: (widget.pet == null && _petCategory == null),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
@@ -150,10 +159,13 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
                             ),
                           ),
                           radius: 50,
-                          backgroundImage: widget.pet == null
-                              ? AssetImage('assets/images/sample/animal.png')
-                              : NetworkImage(
-                                  Apis.avatarDirUrl + widget.pet.avatar),
+                          backgroundImage: imageFile != null
+                              ? FileImage(imageFile)
+                              : widget.pet == null
+                                  ? AssetImage(
+                                      'assets/images/sample/animal.png')
+                                  : NetworkImage(
+                                      Apis.avatarDirUrl + widget.pet.avatar),
                         ),
                       ],
                     ),
@@ -183,45 +195,48 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
                       ],
                     ),
                     FutureBuilder(
-                        future: getAdress(widget?.pet?.address?.address),
+                        future: getAdress(widget?.pet?.address),
                         builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            return InputContainerWrapper(
-                              controller: _addressController
-                                ..text = _addressController.text.isNotEmpty
-                                    ? "   " + _addressController.text
-                                    : ' ' + snapshot.data.trim(),
-                              title: 'Address',
-                              prefix: Icon(
-                                Icons.location_on,
-                                color: Colors.green,
-                                size: 16,
-                              ),
-                              isReadOnly: true,
-                              onTab: () async {
-                                String data =
-                                    await DefaultAssetBundle.of(context)
-                                        .loadString(".env.json");
+                          // if (snapshot.hasData) {
 
-                                String apiKey = jsonDecode(data)["MAP_API_KEY"];
-                                LatLng latLng = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: ((context) =>
-                                            PlacePicker(apiKey))));
+                          // } else
+                          //   return Container();
 
-                                print("RESULT: " + latLng.toString());
+                          if (snapshot.hasData &&
+                              _addressController.text.isEmpty)
+                            _addressController.text = '  ' + snapshot.data;
+                          return InputContainerWrapper(
+                            controller: _addressController,
+                            title: 'Address',
+                            prefix: Icon(
+                              Icons.location_on,
+                              color: Colors.green,
+                              size: 16,
+                            ),
+                            isReadOnly: true,
+                            onTab: () async {
+                              String data = await DefaultAssetBundle.of(context)
+                                  .loadString(".env.json");
+
+                              String apiKey = jsonDecode(data)["MAP_API_KEY"];
+                              LatLng latLng = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: ((context) =>
+                                          PlacePicker(apiKey))));
+                              if (latLng != null) {
                                 String address = await getAddressFromLatLng(
                                     latLng.latitude, latLng.longitude);
+                                print("ADDRESS: " + address);
                                 petAddress = new Address(
                                     address, latLng.latitude, latLng.longitude);
                                 setState(() {
-                                  _addressController.text = address;
+                                  _addressController.text =
+                                      '   ' + address.trim();
                                 });
-                              },
-                            );
-                          } else
-                            return Container();
+                              }
+                            },
+                          );
                         }),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -241,9 +256,9 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
                         SizedBox(width: 8),
                         Expanded(
                           child: InputContainerWrapper(
-                            controller: _weightController,
-                            title: 'Weight',
-                          ),
+                              controller: _weightController,
+                              title: 'Weight',
+                              keyboardType: TextInputType.number),
                         ),
                         SizedBox(width: 8),
                         Expanded(
@@ -255,18 +270,24 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
                       ],
                     ),
                     SizedBox(height: 20),
-                    Container(
-                      padding: EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor,
-                          borderRadius: BorderRadius.all(Radius.circular(10))),
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Submit',
-                        style: Theme.of(context)
-                            .textTheme
-                            .button
-                            .copyWith(color: Colors.white),
+                    GestureDetector(
+                      onTap: () async {
+                        await _onSubmit();
+                      },
+                      child: Container(
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                            color: Theme.of(context).primaryColor,
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10))),
+                        alignment: Alignment.center,
+                        child: Text(
+                          'Submit',
+                          style: Theme.of(context)
+                              .textTheme
+                              .button
+                              .copyWith(color: Colors.white),
+                        ),
                       ),
                     ),
                   ],
@@ -289,8 +310,8 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
       firstDate: DateTime(2000),
       lastDate: DateTime(2025),
     );
-    if (picked != null && picked != selectedDate)
-      _birthdayController.text = DateFormat('yyyy-MM-dd').format(picked);
+    if (picked != null && picked != selectedDate) _petBrithday = picked;
+    _birthdayController.text = DateFormat('yyyy-MM-dd').format(picked);
   }
 
   Future<File> _pickImage() async {
@@ -388,11 +409,11 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
   Widget _buildPetCategory(PetCategory category, Color color) {
     return Expanded(
       child: Opacity(
-        opacity: category == petCategory ? 1 : .3,
+        opacity: category == _petCategory ? 1 : .3,
         child: GestureDetector(
           onTap: () {
             setState(() {
-              petCategory = category;
+              _petCategory = category;
             });
           },
           child: Container(
@@ -495,44 +516,65 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
     );
   }
 
-  void _indatePet({bool isUpdate}) async {
+  Future<Pet> _indatePet({bool isUpdate = false}) async {
     print('start posting...............');
     try {
       token = await getStringValue('token');
       print('start upload iamges...............');
-      String uploadedImageUrl = await uploadImages();
+      String uploadedImageUrl;
+      if (!isUpdate || imageFile != null)
+        uploadedImageUrl = await uploadImages();
       print('End upload iamges...............');
       Response response;
-      Pet newPet = new Pet(
-          id: widget.pet != null ? widget.pet.id : null,
-          category: petCategory,
-          avatar: uploadedImageUrl,
-          name: _nameController.text,
-          bio: _bioController.text,
-          gender: _selectedgender,
-          birhday: _birthdayController.text,
-          address: petAddress,
-          color: _colorController.text,
-          weight: double.parse(_weightController.text),
-          breed: _breedController.text);
+      Pet newPet;
+      if (isUpdate) {
+        widget.pet.name = _nameController.text;
+        widget.pet.bio = _bioController.text;
+        widget.pet.gender = _selectedgender;
+        widget.pet.birhday = _petBrithday;
+        widget.pet.address = petAddress;
+        widget.pet.color = _colorController.text;
+        widget.pet.avatar = uploadedImageUrl ?? widget.pet.avatar;
+        widget.pet.weight = _weightController.text.isNotEmpty
+            ? double.parse(_weightController.text)
+            : null;
+        widget.pet.breed = _breedController.text;
+        newPet = widget.pet;
+      } else
+        newPet = new Pet(
+            id: widget.pet != null ? widget.pet.id : null,
+            category: _petCategory,
+            avatar: uploadedImageUrl,
+            name: _nameController.text,
+            bio: _bioController.text,
+            gender: _selectedgender,
+            birhday: _petBrithday,
+            address: petAddress,
+            color:
+                _colorController.text.isNotEmpty ? _colorController.text : null,
+            weight: _weightController.text.isNotEmpty
+                ? double.parse(_weightController.text)
+                : null,
+            breed: _breedController.text.isNotEmpty
+                ? _breedController.text
+                : null);
+      final data = newPet.toJson();
 
-      // final data = newPost.toUploadJson();
-      // // print('ToJSON: ' + data.toString());
+      print("DATA: " + data.toString());
 
-      // Dio dio = new Dio();
-      // dio.options.headers['content-Type'] = 'application/json';
-      // dio.options.headers["authorization"] = "Bearer $token";
-      // if (isUpdate)
-      //   response = await dio.put(Apis.editPost, data: data);
-      // else
-      //   response = await dio.post(Apis.uploadPost, data: data);
-      // if (response.statusCode == 200 && isUpdate) {
-      //   print("kkkk");
-      //   return Post.fromJson(response.data);
-      // } else if (!isUpdate)
-      //   return newPost;
-      // else
-      //   return null;
+      Dio dio = new Dio();
+      dio.options.headers['content-Type'] = 'application/json';
+      dio.options.headers["authorization"] = "Bearer $token";
+      if (isUpdate)
+        response = await dio.put(Apis.editPet, data: data);
+      else
+        response = await dio.post(Apis.createPet, data: data);
+      if (response.statusCode == 200 && isUpdate) {
+        return Pet.fromJson(response.data);
+      } else if (!isUpdate)
+        return newPet;
+      else
+        return null;
     } catch (e) {
       print(e);
       return null;
@@ -542,7 +584,7 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
   Future<String> uploadImages() async {
     if (imageFile != null) {
       var request =
-          http.MultipartRequest("POST", Uri.parse(Apis.uploadImageUrl));
+          http.MultipartRequest("POST", Uri.parse(Apis.uploadAvatarUrl));
       request.headers['content-Type'] = 'application/json';
       request.headers["authorization"] = "Bearer $token";
       var pic = await http.MultipartFile.fromPath("Images", imageFile.path);
@@ -550,8 +592,45 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
       var response = await request.send();
       var responseData = await response.stream.toBytes();
       var responseString = String.fromCharCodes(responseData);
-      return responseString;
+      return responseString.replaceAll('"', '');
     } else
       return '';
+  }
+
+  bool validateForm() {
+    return (_nameController.text.isNotEmpty &&
+        _petCategory != null &&
+        _bioController.text.isNotEmpty &&
+        _selectedgender != null &&
+        _birthdayController.text.isNotEmpty &&
+        petAddress != null &&
+        imageFile != null);
+  }
+
+  _onSubmit() async {
+    if (widget.pet != null) {
+      EasyLoading.show(status: 'Updating...', dismissOnTap: true);
+      Pet newPet = await _indatePet(isUpdate: true);
+      if (newPet != null) {
+        showToast('Update successfully!');
+        if (widget.onUpdated != null) widget.onUpdated(newPet);
+        Navigator.of(context).pop('edited');
+      } else
+        showError('Update Failed! Please try again.');
+    } else {
+      if (validateForm()) {
+        EasyLoading.show(status: 'Loading...', dismissOnTap: true);
+        Pet newPet = await _indatePet();
+        if (newPet != null) {
+          showToast('Your pet is create successfully!');
+          if (widget.onCreated != null) widget.onCreated(newPet);
+          Navigator.of(context).pop();
+        } else
+          showError('Create Failed! Please try again.');
+      } else {
+        showError(
+            'Some field is required. Please fill all of them before submit!');
+      }
+    }
   }
 }

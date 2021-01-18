@@ -34,11 +34,12 @@ class _MapSearcherState extends State<MapSearcher> {
   String _currentRadius;
   List<String> _radiuses = [
     '1 kilometer',
-    '2 kilometer',
-    '3 kilometer',
-    '4 kilometer',
-    '5 kilometer',
-    '10 kilometer',
+    '2 kilometers',
+    '3 kilometers',
+    '4 kilometers',
+    '5 kilometers',
+    '10 kilometers',
+    '20 kilometers',
   ];
 
   static LatLng _initialPosition = LatLng(10.873286, 106.7914436);
@@ -367,11 +368,18 @@ class _MapSearcherState extends State<MapSearcher> {
     _allMarkers.clear();
     for (Post post in posts) {
       BitmapDescriptor icon = await _getCustomIcon(
-          Apis.baseURL + post?.imageUrls[0], post.pet.name);
+          Apis.baseURL + post?.imageUrls[0].trim(), post.pet.name);
 
-      List<String> spliter = post.pet.address.address.split(';');
-      double lat = double.parse(spliter[0]);
-      double long = double.parse(spliter[1]);
+      double lat;
+      double long;
+      if (post.pet.address.lat != null && post.pet.address.long != null) {
+        lat = post.pet.address.lat;
+        long = post.pet.address.long;
+      } else {
+        List<String> spliter = post.pet.address.addressName.split(';');
+        lat = double.parse(spliter[0]);
+        double.parse(spliter[1]);
+      }
       _allMarkers.add(
         new Marker(
           markerId: MarkerId(post.id.toString()),
