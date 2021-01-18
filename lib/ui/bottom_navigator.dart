@@ -18,7 +18,7 @@ class MyNavigator extends StatefulWidget {
 
 class _MyNavigatorState extends State<MyNavigator>
     with SingleTickerProviderStateMixin {
-  List<Pet> pets = getPetList();
+  // List<Pet> pets = getPetList();
   List<Widget> bodies;
 
   // final autoSizeGroup = AutoSizeGroup();
@@ -74,14 +74,13 @@ class _MyNavigatorState extends State<MyNavigator>
     if (!await Permission.location.status.isGranted) {
       PermissionStatus status = await Permission.location.request();
       if (status.isGranted) {
-        checkPermision();
+        return await checkPermision();
       } else
         return false;
     } else {
       if (!MyLocation().haveData) await _getCurrentLocation();
       return true;
     }
-    return false;
   }
 
   _getCurrentLocation() async {

@@ -14,7 +14,7 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  List<Post> posts = getPostList();
+  // List<Post> posts = getPostList();
 
   List<Vet> vets = [
     new Vet(
@@ -267,19 +267,19 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  List<Widget> buildNewestPet() {
-    List<Widget> list = [];
-    for (var i = 0; i < posts.length; i++) {
-      if (posts[i].pet.newest) {
-        list.add(PostWidget(
-          post: posts[i],
-          index: i,
-          from: 'search2',
-        ));
-      }
-    }
-    return list;
-  }
+  // List<Widget> buildNewestPet() {
+  //   List<Widget> list = [];
+  //   for (var i = 0; i < posts.length; i++) {
+  //     if (posts[i].pet.newest) {
+  //       list.add(PostWidget(
+  //         post: posts[i],
+  //         index: i,
+  //         from: 'search2',
+  //       ));
+  //     }
+  //   }
+  //   return list;
+  // }
 
   Widget buildVet(String imageUrl, String name, String phone, int index) {
     Size size = MediaQuery.of(context).size;

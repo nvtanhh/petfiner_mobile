@@ -89,7 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           key: ObjectKey(posts[index]),
                                           post: posts[index],
                                           showAsColumn: true,
-                                          onDelete: _onDeletePost,
+                                          onDelete: () => _onDeletePost(index),
                                           from: 'home_',
                                         ),
                                       ),
@@ -125,9 +125,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _onDeletePost(Post post) {
+  void _onDeletePost(int index) {
     setState(() {
-      posts.remove(post);
+      posts.removeAt(index);
     });
   }
 

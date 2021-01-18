@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:pet_finder/core/apis.dart';
 import 'package:pet_finder/core/models/pet.dart';
+import 'package:pet_finder/core/models/post.dart';
+import 'package:pet_finder/utils.dart';
 import 'package:pet_finder/ui/pet_indate.dart';
 import 'package:pet_finder/ui/widgets/pet_widget_small.dart';
+import 'package:http/http.dart' as http;
 
 class PetsManager extends StatefulWidget {
   final List<Pet> pets;
@@ -66,5 +70,20 @@ class _PetsManagerState extends State<PetsManager> {
         ],
       ),
     );
+  }
+
+  Future<bool> _deletePost(Post post) async {
+    String token = await getStringValue('token');
+    final http.Response response = await http.delete(
+      Apis.deletePost + post.id.toString(),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $token'
+      },
+    );
+
+    print('_deletePost:  ' + response.statusCode.toString());
+
+    return response.statusCode == 200;
   }
 }

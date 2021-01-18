@@ -3,14 +3,16 @@ class ImagesList {
 
   ImagesList({this.images});
 
-  factory ImagesList.fromJson(List<dynamic> parsedJson) {
-    List<String> images =
-        parsedJson.map((imageJson) => imageJson['Url'] as String).toList();
+  factory ImagesList.fromJson(List<dynamic> parsedJson, {bool post: false}) {
+    String prefix = post ? '/Images/files/' : ' ';
+    List<String> images = parsedJson
+        .map((imageJson) => prefix + (imageJson['Url'] as String))
+        .toList();
 
     return new ImagesList(images: images);
   }
-  static List<dynamic> toJsonPost(List<String> imageUrls) {
-    return imageUrls.map((url) => {'Url': '/Images/files/' + url}).toList();
+  static List<dynamic> toJson(List<String> imageUrls) {
+    return imageUrls.map((url) => {'Url': url}).toList();
   }
 
   static List<dynamic> toJsonAvatar(List<String> imageUrls) {

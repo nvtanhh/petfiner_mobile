@@ -107,7 +107,7 @@ class MyDrawer extends StatelessWidget {
                   onPressed: () async {
                     Navigator.of(context).pop();
                   },
-                  child: Text('Delete'),
+                  child: Text('Feedback'),
                   color: Theme.of(context).primaryColor,
                   textColor: const Color(0xffffffff),
                 ),

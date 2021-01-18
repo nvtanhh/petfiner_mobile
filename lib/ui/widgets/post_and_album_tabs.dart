@@ -192,8 +192,10 @@ class _PostAndAblumWrapperState extends State<PostAndAblumWrapper> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: ((context) =>
-                            PostDetail(widget.posts[index], from: 'grid_'))));
+                        builder: ((context) => PostDetail(widget.posts[index],
+                            from: 'grid_',
+                            onUpdate: (value) => _onUpdatePost(index, value),
+                            onDelete: () => _onDeletePost(index)))));
               },
             ),
           )
@@ -202,5 +204,17 @@ class _PostAndAblumWrapperState extends State<PostAndAblumWrapper> {
             : Center(
                 child: Text("Error!"),
               );
+  }
+
+  void _onUpdatePost(int index, Post value) {
+    setState(() {
+      widget.posts[index] = value;
+    });
+  }
+
+  void _onDeletePost(int index) {
+    setState(() {
+      widget.posts.removeAt(index);
+    });
   }
 }

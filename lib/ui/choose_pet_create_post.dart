@@ -45,7 +45,7 @@ class _ChoosePetState extends State<ChoosePet> {
             padding: const EdgeInsets.all(16),
             alignment: Alignment.centerLeft,
             child: Text(
-              'Which Pet your create a new post for?',
+              'Which Pet you create a new post for?',
               style: Theme.of(context).textTheme.headline6,
             ),
           ),

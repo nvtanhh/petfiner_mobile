@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -9,11 +10,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pet_finder/core/apis.dart';
+import 'package:pet_finder/core/models/Address.dart';
 import 'package:pet_finder/core/models/pet.dart';
 import 'package:image/image.dart' as Im;
 import 'package:pet_finder/locationpiker/widgets/widgets.dart';
 import 'package:pet_finder/ui/widgets/input_wrapper.dart';
 import 'package:pet_finder/utils.dart';
+import 'package:share/share.dart';
+import 'package:http/http.dart' as http;
 
 class PetAddUpdate extends StatefulWidget {
   final Pet pet;
@@ -25,6 +29,10 @@ class PetAddUpdate extends StatefulWidget {
 }
 
 class _PetAddUpdateState extends State<PetAddUpdate> {
+  String token;
+
+  Address petAddress;
+
   _PetAddUpdateState();
   List<String> _genders = ['Male', 'Female'];
 
@@ -72,6 +80,9 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
                 size: 20,
               ),
               onPressed: () {
+                if (widget.pet != null) {
+                  _indatePet(isUpdate: true);
+                } else {}
                 // EasyLoading.showToast('Save successfully!');
                 // Navigator.pop(context);
               })
@@ -202,6 +213,8 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
                                 print("RESULT: " + latLng.toString());
                                 String address = await getAddressFromLatLng(
                                     latLng.latitude, latLng.longitude);
+                                petAddress = new Address(
+                                    address, latLng.latitude, latLng.longitude);
                                 setState(() {
                                   _addressController.text = address;
                                 });
@@ -480,5 +493,65 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
         ),
       ),
     );
+  }
+
+  void _indatePet({bool isUpdate}) async {
+    print('start posting...............');
+    try {
+      token = await getStringValue('token');
+      print('start upload iamges...............');
+      String uploadedImageUrl = await uploadImages();
+      print('End upload iamges...............');
+      Response response;
+      Pet newPet = new Pet(
+          id: widget.pet != null ? widget.pet.id : null,
+          category: petCategory,
+          avatar: uploadedImageUrl,
+          name: _nameController.text,
+          bio: _bioController.text,
+          gender: _selectedgender,
+          birhday: _birthdayController.text,
+          address: petAddress,
+          color: _colorController.text,
+          weight: double.parse(_weightController.text),
+          breed: _breedController.text);
+
+      // final data = newPost.toUploadJson();
+      // // print('ToJSON: ' + data.toString());
+
+      // Dio dio = new Dio();
+      // dio.options.headers['content-Type'] = 'application/json';
+      // dio.options.headers["authorization"] = "Bearer $token";
+      // if (isUpdate)
+      //   response = await dio.put(Apis.editPost, data: data);
+      // else
+      //   response = await dio.post(Apis.uploadPost, data: data);
+      // if (response.statusCode == 200 && isUpdate) {
+      //   print("kkkk");
+      //   return Post.fromJson(response.data);
+      // } else if (!isUpdate)
+      //   return newPost;
+      // else
+      //   return null;
+    } catch (e) {
+      print(e);
+      return null;
+    }
+  }
+
+  Future<String> uploadImages() async {
+    if (imageFile != null) {
+      var request =
+          http.MultipartRequest("POST", Uri.parse(Apis.uploadImageUrl));
+      request.headers['content-Type'] = 'application/json';
+      request.headers["authorization"] = "Bearer $token";
+      var pic = await http.MultipartFile.fromPath("Images", imageFile.path);
+      request.files.add(pic);
+      var response = await request.send();
+      var responseData = await response.stream.toBytes();
+      var responseString = String.fromCharCodes(responseData);
+      return responseString;
+    } else
+      return '';
   }
 }

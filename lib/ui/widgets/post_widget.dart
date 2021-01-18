@@ -6,15 +6,13 @@ import 'package:pet_finder/core/models/pet.dart';
 import 'package:pet_finder/ui/post_detail.dart';
 import 'package:pet_finder/utils.dart';
 
-class PostWidget extends StatelessWidget {
+class PostWidget extends StatefulWidget {
   final Post post;
   final int index;
 
   final bool showAsColumn;
-
   final String from;
-
-  ValueChanged<Post> onDelete;
+  Function onDelete;
 
   PostWidget(
       {Key key,
@@ -26,18 +24,34 @@ class PostWidget extends StatelessWidget {
       : super(key: key);
 
   @override
+  _PostWidgetState createState() => _PostWidgetState();
+}
+
+class _PostWidgetState extends State<PostWidget> {
+  Post post;
+
+  @override
+  void initState() {
+    super.initState();
+    post = widget.post;
+  }
+
+  @override
   Widget build(BuildContext context) {
     Pet pet = post.pet;
-    String tagPrefix = from ?? '';
+    String tagPrefix = widget.from ?? '';
     return GestureDetector(
       onTap: () async {
         String mess = await Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => PostDetail(post, from: from)),
-        );
-
-        if (mess != 'delete') {
-          onDelete(post);
+            context,
+            MaterialPageRoute(
+                builder: (context) => PostDetail(
+                      widget.post,
+                      from: widget.from,
+                      onUpdate: _onUpdatePost,
+                    )));
+        if (mess != null && mess == 'deleted') {
+          widget.onDelete();
         }
       },
       child: Container(
@@ -53,8 +67,8 @@ class PostWidget extends StatelessWidget {
           ),
         ),
         margin: EdgeInsets.only(
-            right: !showAsColumn && index != null ? 16 : 0,
-            left: !showAsColumn && index == 0 ? 16 : 0,
+            right: !widget.showAsColumn && widget.index != null ? 16 : 0,
+            left: !widget.showAsColumn && widget.index == 0 ? 16 : 0,
             bottom: 16),
         width: 220,
         child: Column(
@@ -109,7 +123,7 @@ class PostWidget extends StatelessWidget {
                       ),
                     ),
                   ),
-                  if (!showAsColumn)
+                  if (!widget.showAsColumn)
                     Align(
                       alignment: Alignment.bottomLeft,
                       child: Padding(
@@ -121,13 +135,13 @@ class PostWidget extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: EdgeInsets.all(showAsColumn ? 16 : 8),
+              padding: EdgeInsets.all(widget.showAsColumn ? 16 : 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (showAsColumn) _buildPostCategory(),
+                  if (widget.showAsColumn) _buildPostCategory(),
                   SizedBox(
-                    height: showAsColumn ? 12 : 8,
+                    height: widget.showAsColumn ? 12 : 8,
                   ),
                   Text(
                     pet.name,
@@ -135,16 +149,17 @@ class PostWidget extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: Colors.grey[800],
-                      fontSize: showAsColumn ? 18 : 14,
+                      fontSize: widget.showAsColumn ? 18 : 14,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   // SizedBox(
                   //   height: showAsColumn ? 12 : 8,
                   // ),
-                  if (showAsColumn)
+                  if (widget.showAsColumn)
                     Padding(
-                      padding: EdgeInsets.only(top: showAsColumn ? 12 : 8),
+                      padding:
+                          EdgeInsets.only(top: widget.showAsColumn ? 12 : 8),
                       child: Row(
                         children: [
                           Icon(
@@ -231,5 +246,11 @@ class PostWidget extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _onUpdatePost(Post value) {
+    setState(() {
+      post = value;
+    });
   }
 }

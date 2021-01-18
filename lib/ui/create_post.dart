@@ -82,7 +82,7 @@ class _CreatePostState extends State<CreatePost> {
       appBar: AppBar(
         automaticallyImplyLeading: true,
         title: Text(
-          "Create Post",
+          widget.post == null ? "Create Post" : 'Edit Post',
           style: TextStyle(),
         ),
         centerTitle: true,
@@ -104,9 +104,8 @@ class _CreatePostState extends State<CreatePost> {
                 EasyLoading.show(status: 'Updating...', dismissOnTap: true);
                 Post newPost = await _indate(isUpdate: true);
                 if (newPost != null) {
-                  print("LENGHT:  " + newPost.imageUrls.length.toString());
                   showToast('Update successfully!');
-                  Navigator.of(context).pop(newPost);
+                  Navigator.of(context).pop('edited');
                 } else
                   showError('Post Failed! Please try again.');
               } else {
@@ -206,7 +205,7 @@ class _CreatePostState extends State<CreatePost> {
                         physics: NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
                         scrollDirection: Axis.horizontal,
-                        itemCount: widget.post.imageUrls.length,
+                        itemCount: widget?.post?.imageUrls?.length ?? 0,
                         itemBuilder: (context, index) =>
                             _imageItem(isWaiting: true));
                   }
@@ -435,20 +434,27 @@ class _CreatePostState extends State<CreatePost> {
     print('start posting...............');
     try {
       token = await getStringValue('token');
-      print('start upload iamges...............');
+      print('start upload images...............');
       List<String> uploadedImageUrls = await uploadImages();
       print('End upload iamges...............');
       Response response;
-      Post newPost = new Post(
-          id: widget?.post?.id,
-          pet: pet,
-          imageUrls: uploadedImageUrls,
-          postCategory: _choosedPostCategory,
-          content: _contentController.text,
-          createdAt: isUpdate ? null : new DateTime.now());
+
+      Post newPost;
+      if (isUpdate) {
+        widget.post.imageUrls = uploadedImageUrls;
+        widget.post.content = _contentController.text;
+        widget.post.postCategory = _choosedPostCategory;
+        newPost = widget.post;
+      } else
+        newPost = new Post(
+            pet: pet,
+            imageUrls: uploadedImageUrls,
+            postCategory: _choosedPostCategory,
+            content: _contentController.text,
+            createdAt: isUpdate ? null : new DateTime.now());
 
       final data = newPost.toUploadJson();
-      // print('ToJSON: ' + data.toString());
+      print('ToJSON: ' + data.toString());
 
       Dio dio = new Dio();
       dio.options.headers['content-Type'] = 'application/json';
@@ -483,7 +489,7 @@ class _CreatePostState extends State<CreatePost> {
       var response = await request.send();
       var responseData = await response.stream.toBytes();
       var responseString = String.fromCharCodes(responseData);
-      return ImagesList.fromJson(jsonDecode(responseString)).images;
+      return ImagesList.fromJson(jsonDecode(responseString), post: true).images;
     } else
       return [];
   }
@@ -558,8 +564,8 @@ class _CreatePostState extends State<CreatePost> {
   }
 
   Future<bool> loadImage() async {
-    print('start loadImage.......');
     if (widget.post != null) {
+      print('start loadImage.......');
       for (String url in widget.post.imageUrls) {
         _uploadedImages
             .add(await DefaultCacheManager().getSingleFile(Apis.baseURL + url));

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -18,8 +20,10 @@ class PostDetail extends StatefulWidget {
   final Post post;
 
   final String from;
+  ValueChanged<Post> onUpdate;
 
-  PostDetail(this.post, {this.from});
+  Function() onDelete;
+  PostDetail(this.post, {this.from, this.onUpdate, this.onDelete});
 
   @override
   _PostDetailState createState() => _PostDetailState(post);
@@ -33,6 +37,8 @@ class _PostDetailState extends State<PostDetail> {
   Post post;
 
   Future _isMyPostFuture;
+
+  bool isEdited = false;
 
   _PostDetailState(this.post);
 
@@ -537,12 +543,13 @@ class _PostDetailState extends State<PostDetail> {
   }
 
   void _editPost() async {
-    Post editedPost = await Navigator.push(
+    String mess = await Navigator.push(
         context, MaterialPageRoute(builder: (_) => CreatePost(post: post)));
-    if (editedPost != null)
-      setState(() {
-        post = editedPost;
-      });
+    if (mess != null && mess == 'edited') {
+      // isEdited = true;
+      setState(() {});
+      widget.onUpdate(post);
+    }
   }
 
   _showDeleteDialog(BuildContext context) {
@@ -576,9 +583,9 @@ class _PostDetailState extends State<PostDetail> {
                 elevation: 3.0,
                 onPressed: () async {
                   Navigator.of(context).pop();
-
                   if (await _deletePost()) {
-                    Navigator.of(context).pop('delete');
+                    Navigator.of(context).pop('deleted');
+                    if (widget.onDelete != null) widget.onDelete();
                     EasyLoading.showToast("Deleted!",
                         duration: new Duration(seconds: 1));
                   } else
