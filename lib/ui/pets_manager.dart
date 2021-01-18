@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pet_finder/core/models/pet.dart';
-import 'package:pet_finder/ui/pest_indate.dart';
+import 'package:pet_finder/ui/pet_indate.dart';
 import 'package:pet_finder/ui/widgets/pet_widget_small.dart';
 
 class PetsManager extends StatefulWidget {

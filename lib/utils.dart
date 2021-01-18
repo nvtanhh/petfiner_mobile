@@ -38,7 +38,7 @@ bool isEmail(String email) {
 
 Future<String> getStringValue(String key) async {
   SharedPreferences _prefs = await SharedPreferences.getInstance();
-  return _prefs.getString('token');
+  return _prefs.getString(key);
 }
 
 Future<void> setStringValue(String key, String value) async {
@@ -70,6 +70,7 @@ Future<String> getAddressFromLatLng(double latitude, double longitude) async {
 }
 
 Future<String> getAdress(String position) async {
+  if (position == null) return '';
   List<String> spliter = position.split(';');
   double lat = double.parse(spliter[0]);
   double long = double.parse(spliter[1]);

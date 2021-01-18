@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "612990493080",
+    "project_id": "pet-finder-76b70",
+    "storage_bucket": "pet-finder-76b70.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:612990493080:android:667a7e77f2e6ca69da8bed",
+        "android_client_info": {
+          "package_name": "com.greentea.petfinder"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "612990493080-8hq6pubgv377vvsqinhcqgpl3quhu4e7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD0ff11zeWU0umAU1jraKXw10LGj64d9G0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "612990493080-8hq6pubgv377vvsqinhcqgpl3quhu4e7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

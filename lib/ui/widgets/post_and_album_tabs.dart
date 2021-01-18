@@ -183,7 +183,7 @@ class _PostAndAblumWrapperState extends State<PostAndAblumWrapper> {
                   image: widget.posts[index].imageUrls.length == 0
                       ? AssetImage(_defaultPostImage)
                       : CachedNetworkImageProvider(
-                          Apis.baseUrlOnline + widget.posts[index].imageUrls[0],
+                          Apis.baseURL + widget.posts[index].imageUrls[0],
                         ),
                   fit: BoxFit.cover,
                 ))),

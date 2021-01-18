@@ -67,7 +67,7 @@ class PetWidget extends StatelessWidget {
           children: [
             CircleAvatar(
               backgroundImage: pet?.avatar == null
-                  ? AssetImage('assets/sample/animal.jpg')
+                  ? AssetImage('assets/images/sample/animal.png')
                   : CachedNetworkImageProvider(
                       Apis.avatarDirUrl + pet.avatar,
                     ),

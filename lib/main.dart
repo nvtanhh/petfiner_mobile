@@ -4,8 +4,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_finder/app_them.dart';
 import 'package:pet_finder/ui/bottom_navigator.dart';
 import 'package:pet_finder/ui/root_page.dart';
+import 'package:pet_finder/app_push.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp());
 }
 
@@ -21,7 +23,7 @@ class MyApp extends StatelessWidget {
         textTheme: GoogleFonts.montserratTextTheme(),
       ),
       debugShowCheckedModeBanner: false,
-      home: RootPage(),
+      home: AppPushs(child: RootPage()),
       builder: EasyLoading.init(),
     );
   }

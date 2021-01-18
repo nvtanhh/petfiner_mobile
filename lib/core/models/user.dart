@@ -29,18 +29,19 @@ class User {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'email': email,
-        'bio': bio,
-        'phone_number': phone,
-        'avatar': avatar,
-        'pets': petList?.pets?.map((Pet pet) => pet.toJson())?.toList(),
-        'posts': postList?.posts?.map((Post post) => post.toJson())?.toList()
+        'Id': id,
+        'Name': name,
+        // 'email': email,
+        // 'bio': bio,
+        // 'phone_number': phone,
+        'Avatar': avatar,
+        // 'pets': petList?.pets?.map((Pet pet) => pet.toJson())?.toList(),
+        // 'posts':
+        //     postList?.posts?.map((Post post) => post.toUploadJson())?.toList()
       };
 
   User.fromJson(Map<String, dynamic> json)
-      : id = json['UserId'],
+      : id = json['Id'],
         email = json['Email'],
         name = json['UserName'],
         phone = json['Phone'],

@@ -15,7 +15,7 @@ class Pet {
   String distance;
   PetCategory category;
   String avatar;
-  bool favorite;
+  bool isFollowed;
   bool newest;
   String breed;
   String color;
@@ -24,7 +24,7 @@ class Pet {
   User owner;
 
   Pet(this.name, this.bio, this.breed, this.gender, this.birhday, this.address,
-      this.distance, this.category, this.avatar, this.favorite, this.newest,
+      this.distance, this.category, this.avatar, this.isFollowed, this.newest,
       {this.color, this.weight});
 
   Pet.fromJson(Map<String, dynamic> json)
@@ -34,6 +34,7 @@ class Pet {
         gender = json['Gender'] == 1 ? 'Male' : 'Female',
         address = Address.fromJSON(json['Address']),
         category = getPetCategory(json['Category']['Id'] as int),
+        isFollowed = json['IsFollowed'],
         avatar = json['Avatar'],
         breed = json['Breed'],
         color = json['Color'],
@@ -43,17 +44,18 @@ class Pet {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id.toString(),
-      'name': name,
-      'bio': bio,
-      'gender': gender,
-      'birhday': birhday,
-      'location': address,
-      'category': categoryToString(category),
-      'avatar': avatar,
-      'breed': breed,
-      'color': color,
-      'weight': weight,
+      'Id': id.toString(),
+      'Name': name,
+      'Bio': bio,
+      'Gender': gender,
+      'Birhday': birhday,
+      'Address': address.toJson(),
+      'Category': categoryToString(category),
+      'Avatar': avatar,
+      'Breed': breed,
+      'Color': color,
+      'Weight': weight,
+      'Owner': owner.toJson()
     };
   }
 
@@ -92,6 +94,10 @@ class Pet {
         break;
     }
     return null;
+  }
+
+  Map<String, dynamic> toIdJson() {
+    return {'id': id.toString()};
   }
 }
 

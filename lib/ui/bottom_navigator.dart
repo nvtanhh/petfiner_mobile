@@ -78,7 +78,7 @@ class _MyNavigatorState extends State<MyNavigator>
       } else
         return false;
     } else {
-      await _getCurrentLocation();
+      if (!MyLocation().haveData) await _getCurrentLocation();
       return true;
     }
     return false;

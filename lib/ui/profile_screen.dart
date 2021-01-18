@@ -50,7 +50,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Scaffold(
         key: _scaffoldKey,
         backgroundColor: Colors.white,
-        endDrawer: MyDrawer(),
+        endDrawer: widget.user == null ? MyDrawer() : null,
         appBar: AppBar(
           iconTheme: IconThemeData(
             color: Colors.black,
@@ -118,47 +118,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Expanded(
                 child: Column(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          children: [
-                            Text(
-                              "2",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              ),
-                            ),
-                            Text('Post'),
-                          ],
-                        ),
-                        Column(
-                          children: [
-                            Text(
-                              "100",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              ),
-                            ),
-                            Text('Followers'),
-                          ],
-                        ),
-                        Column(
-                          children: [
-                            Text(
-                              "10",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              ),
-                            ),
-                            Text('Following'),
-                          ],
-                        ),
-                      ],
-                    ),
+                    // Row(
+                    //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    //   children: [
+                    //     Column(
+                    //       children: [
+                    //         Text(
+                    //           "2",
+                    //           style: TextStyle(
+                    //             fontWeight: FontWeight.bold,
+                    //             fontSize: 18,
+                    //           ),
+                    //         ),
+                    //         Text('Post'),
+                    //       ],
+                    //     ),
+                    //     Column(
+                    //       children: [
+                    //         Text(
+                    //           "100",
+                    //           style: TextStyle(
+                    //             fontWeight: FontWeight.bold,
+                    //             fontSize: 18,
+                    //           ),
+                    //         ),
+                    //         Text('Followers'),
+                    //       ],
+                    //     ),
+                    //     Column(
+                    //       children: [
+                    //         Text(
+                    //           "10",
+                    //           style: TextStyle(
+                    //             fontWeight: FontWeight.bold,
+                    //             fontSize: 18,
+                    //           ),
+                    //         ),
+                    //         Text('Following'),
+                    //       ],
+                    //     ),
+                    //   ],
+                    // ),
                   ],
                 ),
               ),
@@ -239,24 +239,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     builder: ((context) => PetsManager(_myPets))));
           },
           child: Container(
-            padding: EdgeInsets.symmetric(vertical: 12),
+            padding: EdgeInsets.symmetric(vertical: 10),
             child: Row(
               children: [
-                Text(
-                  'Pets',
-                  style: Theme.of(context)
-                      .textTheme
-                      .subtitle1
-                      .copyWith(fontWeight: FontWeight.w500),
+                Icon(
+                  Icons.pets,
+                  size: 16,
+                  color: Colors.grey,
                 ),
                 Expanded(
                   child: Container(
-                    margin: EdgeInsets.only(left: 10),
+                    margin: EdgeInsets.only(left: 5),
                     alignment: Alignment.centerLeft,
-                    child: Icon(
-                      Icons.edit,
-                      size: 16,
-                      color: Colors.grey,
+                    child: Text(
+                      'Pets',
+                      style: Theme.of(context)
+                          .textTheme
+                          .subtitle1
+                          .copyWith(fontWeight: FontWeight.w500, height: 1.5),
                     ),
                   ),
                 )
@@ -303,6 +303,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         setState(() {
           user = User.fromJson(parsedJson);
         });
+        setStringValue('loggedUserId', user.id.toString());
       } else if (response.statusCode == 500) {
         showError('Server error, please try again latter.');
       }

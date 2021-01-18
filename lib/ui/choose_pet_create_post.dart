@@ -83,7 +83,7 @@ class _ChoosePetState extends State<ChoosePet> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => CreatePost(pet)),
+          MaterialPageRoute(builder: (context) => CreatePost(pet: pet)),
         );
       },
       child: Container(
@@ -103,7 +103,7 @@ class _ChoosePetState extends State<ChoosePet> {
           children: [
             CircleAvatar(
               backgroundImage: pet?.avatar == null
-                  ? AssetImage('assets/sample/animal.jpg')
+                  ? AssetImage('assets/images/sample/animal.png')
                   : CachedNetworkImageProvider(
                       Apis.avatarDirUrl + pet.avatar,
                     ),

@@ -4,11 +4,11 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pet_finder/core/apis.dart';
 import 'package:pet_finder/core/models/pet.dart';
 import 'package:image/image.dart' as Im;
 import 'package:pet_finder/locationpiker/widgets/widgets.dart';
@@ -21,14 +21,12 @@ class PetAddUpdate extends StatefulWidget {
   PetAddUpdate({Key key, this.pet}) : super(key: key);
 
   @override
-  _PetAddUpdateState createState() => _PetAddUpdateState(pet);
+  _PetAddUpdateState createState() => _PetAddUpdateState();
 }
 
 class _PetAddUpdateState extends State<PetAddUpdate> {
-  final Pet pet;
-
+  _PetAddUpdateState();
   List<String> _genders = ['Male', 'Female'];
-  _PetAddUpdateState(this.pet);
 
   PetCategory petCategory;
 
@@ -45,14 +43,15 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
   @override
   void initState() {
     super.initState();
-    if (pet != null) {
-      _nameController.text = pet.name;
-      _bioController.text = pet.bio;
-      _selectedgender = pet.gender.capitalize();
-      _birthdayController.text = pet.birhday;
-      _colorController.text = pet.color;
-      _weightController.text = pet.weight == null ? '' : pet.weight.toString();
-      _breedController.text = pet.breed;
+    if (widget.pet != null) {
+      _nameController.text = widget.pet.name;
+      _bioController.text = widget.pet.bio;
+      _selectedgender = widget.pet.gender.capitalize();
+      _birthdayController.text = widget.pet.birhday;
+      _colorController.text = widget.pet.color;
+      _weightController.text =
+          widget.pet.weight == null ? '' : widget.pet.weight.toString();
+      _breedController.text = widget.pet.breed;
     }
   }
 
@@ -62,7 +61,7 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
       appBar: AppBar(
         automaticallyImplyLeading: true,
         title: Text(
-          pet != null ? pet.name : "Add your new pet",
+          widget.pet != null ? widget.pet.name : "Add your new pet",
           style: TextStyle(),
         ),
         centerTitle: true,
@@ -73,8 +72,8 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
                 size: 20,
               ),
               onPressed: () {
-                EasyLoading.showToast('Save successfully!');
-                Navigator.pop(context);
+                // EasyLoading.showToast('Save successfully!');
+                // Navigator.pop(context);
               })
         ],
       ),
@@ -88,7 +87,7 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
         SizedBox(
           height: 20,
         ),
-        if (pet == null)
+        if (widget.pet == null)
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -106,15 +105,15 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
           ),
         GestureDetector(
           onTap: () {
-            if (pet == null && petCategory == null) {
+            if (widget.pet == null && petCategory == null) {
               EasyLoading.showToast(
                   'Choose what kind of your pet first, please!');
             }
           },
           child: Opacity(
-            opacity: (pet == null && petCategory == null) ? .4 : 1,
+            opacity: (widget.pet == null && petCategory == null) ? .4 : 1,
             child: AbsorbPointer(
-              absorbing: (pet == null && petCategory == null),
+              absorbing: (widget.pet == null && petCategory == null),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
@@ -140,9 +139,10 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
                             ),
                           ),
                           radius: 50,
-                          backgroundImage: pet == null
+                          backgroundImage: widget.pet == null
                               ? AssetImage('assets/images/sample/animal.png')
-                              : AssetImage(pet.avatar),
+                              : NetworkImage(
+                                  Apis.avatarDirUrl + widget.pet.avatar),
                         ),
                       ],
                     ),
@@ -152,6 +152,7 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
                     InputContainerWrapper(
                       controller: _bioController,
                       title: 'Bio',
+                      maxLines: 3,
                     ),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -170,36 +171,45 @@ class _PetAddUpdateState extends State<PetAddUpdate> {
                         ),
                       ],
                     ),
-                    InputContainerWrapper(
-                      controller: _addressController
-                        ..text = _addressController.text.isNotEmpty
-                            ? "   " + _addressController.text
-                            : ' ',
-                      title: 'Address',
-                      prefix: Icon(
-                        Icons.location_on,
-                        color: Colors.green,
-                        size: 16,
-                      ),
-                      isReadOnly: true,
-                      onTab: () async {
-                        String data = await DefaultAssetBundle.of(context)
-                            .loadString(".env.json");
+                    FutureBuilder(
+                        future: getAdress(widget?.pet?.address?.address),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            return InputContainerWrapper(
+                              controller: _addressController
+                                ..text = _addressController.text.isNotEmpty
+                                    ? "   " + _addressController.text
+                                    : ' ' + snapshot.data.trim(),
+                              title: 'Address',
+                              prefix: Icon(
+                                Icons.location_on,
+                                color: Colors.green,
+                                size: 16,
+                              ),
+                              isReadOnly: true,
+                              onTab: () async {
+                                String data =
+                                    await DefaultAssetBundle.of(context)
+                                        .loadString(".env.json");
 
-                        String apiKey = jsonDecode(data)["MAP_API_KEY"];
-                        LatLng latLng = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: ((context) => PlacePicker(apiKey))));
+                                String apiKey = jsonDecode(data)["MAP_API_KEY"];
+                                LatLng latLng = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: ((context) =>
+                                            PlacePicker(apiKey))));
 
-                        print("RESULT: " + latLng.toString());
-                        String address = await getAddressFromLatLng(
-                            latLng.latitude, latLng.longitude);
-                        setState(() {
-                          _addressController.text = address;
-                        });
-                      },
-                    ),
+                                print("RESULT: " + latLng.toString());
+                                String address = await getAddressFromLatLng(
+                                    latLng.latitude, latLng.longitude);
+                                setState(() {
+                                  _addressController.text = address;
+                                });
+                              },
+                            );
+                          } else
+                            return Container();
+                        }),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       child: Text(

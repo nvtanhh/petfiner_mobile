@@ -270,13 +270,19 @@ class _SearchResultState extends State<SearchResult> {
           break;
         default:
       }
-      setState(() {
-        _filteredPosts = _myPosts.where((post) => _isMatching(post)).toList();
-      });
+      if (!filterAdoption && !filterMating && !filterDisappear)
+        setState(() {
+          _filteredPosts = _myPosts;
+        });
+      else
+        setState(() {
+          _filteredPosts = _myPosts.where((post) => _isMatching(post)).toList();
+        });
     }
   }
 
   bool _isMatching(Post post) {
+    print(post.pet.name);
     switch (post.postCategory) {
       case PostCategory.Adoption:
         return filterAdoption;

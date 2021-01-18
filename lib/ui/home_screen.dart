@@ -89,6 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           key: ObjectKey(posts[index]),
                                           post: posts[index],
                                           showAsColumn: true,
+                                          onDelete: _onDeletePost,
                                           from: 'home_',
                                         ),
                                       ),
@@ -122,6 +123,12 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  void _onDeletePost(Post post) {
+    setState(() {
+      posts.remove(post);
+    });
   }
 
   Widget _buildAppBar() {
@@ -168,12 +175,13 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       ).timeout(Duration(seconds: 30));
 
-      print('_loadNewPosts:  Home Screen' + response.statusCode.toString());
+      print('_loadNewPosts home Screen:  ' + response.statusCode.toString());
       if (response.statusCode == 200) {
         var parsedJson = jsonDecode(response.body);
-        PostsList postsList = PostsList.fromJson(parsedJson);
+        List<Post> fetchedPosts = PostsList.fromJson(parsedJson).posts;
+        fetchedPosts.sort((a, b) => (b.id.compareTo(a.id)));
         setState(() {
-          posts = postsList.posts;
+          posts = fetchedPosts;
         });
       } else if (response.statusCode == 500) {
         _onError();

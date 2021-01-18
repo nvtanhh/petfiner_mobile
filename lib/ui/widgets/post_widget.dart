@@ -14,12 +14,15 @@ class PostWidget extends StatelessWidget {
 
   final String from;
 
+  ValueChanged<Post> onDelete;
+
   PostWidget(
       {Key key,
       @required this.post,
       this.index,
       this.showAsColumn = false,
-      this.from})
+      this.from,
+      this.onDelete})
       : super(key: key);
 
   @override
@@ -27,11 +30,15 @@ class PostWidget extends StatelessWidget {
     Pet pet = post.pet;
     String tagPrefix = from ?? '';
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
+      onTap: () async {
+        String mess = await Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => PostDetail(post, from: from)),
         );
+
+        if (mess != 'delete') {
+          onDelete(post);
+        }
       },
       child: Container(
         decoration: BoxDecoration(
@@ -63,11 +70,11 @@ class PostWidget extends StatelessWidget {
                     child: Container(
                       decoration: BoxDecoration(
                         image: DecorationImage(
-                          image: (post.imageUrls == null &&
+                          image: (post.imageUrls == null ||
                                   post.imageUrls.length == 0)
                               ? AssetImage('assets/images/sample/animal.png')
                               : CachedNetworkImageProvider(
-                                  Apis.baseUrlOnline + post.imageUrls[0],
+                                  Apis.baseURL + post.imageUrls[0],
                                 ),
                           fit: BoxFit.cover,
                         ),
@@ -89,16 +96,14 @@ class PostWidget extends StatelessWidget {
                           width: 30,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: post.isFavorite
-                                ? Colors.red[400]
-                                : Colors.white,
+                            color:
+                                post.isLiked ? Colors.red[400] : Colors.white,
                           ),
                           child: Icon(
                             Icons.favorite,
                             size: 16,
-                            color: post.isFavorite
-                                ? Colors.white
-                                : Colors.grey[300],
+                            color:
+                                post.isLiked ? Colors.white : Colors.grey[300],
                           ),
                         ),
                       ),

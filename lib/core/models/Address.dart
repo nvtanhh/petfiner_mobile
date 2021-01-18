@@ -1,3 +1,5 @@
+import 'package:pet_finder/utils.dart';
+
 class Address {
   String address;
   double lat, long;
@@ -8,5 +10,11 @@ class Address {
     address = json["Address"];
     lat = json['Lat'];
     long = json['Long'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'Address': lat.toString() + ';' + long.toString() + ';' + address,
+    };
   }
 }

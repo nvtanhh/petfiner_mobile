@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:pet_finder/core/apis.dart';
 import 'package:pet_finder/core/models/pet.dart';
 
-import 'package:pet_finder/ui/pest_indate.dart';
+import 'package:pet_finder/ui/pet_indate.dart';
 
 class PetDetail extends StatelessWidget {
   final Pet pet;
@@ -42,6 +42,26 @@ class PetDetail extends StatelessWidget {
               child: _buildPetInfo(),
             ),
             Padding(
+              padding: EdgeInsets.all(8),
+              child: Row(
+                children: [
+                  buildPetFeature(
+                      pet.age != null
+                          ? pet.age.toString()
+                          : 'Uknow' + " months",
+                      "Months"),
+                  buildPetFeature(
+                      pet.color != null ? pet.color.toString() : 'Uknow',
+                      "Color"),
+                  buildPetFeature(
+                      pet.weight != null
+                          ? pet.weight.toString() + ' Kg'
+                          : 'Uknow',
+                      "Weight"),
+                ],
+              ),
+            ),
+            Padding(
               padding: EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -59,6 +79,49 @@ class PetDetail extends StatelessWidget {
             )
           ],
         ));
+  }
+
+  buildPetFeature(String value, String feature) {
+    return Expanded(
+      child: Container(
+        height: 70,
+        padding: EdgeInsets.all(10),
+        margin: EdgeInsets.symmetric(horizontal: 8),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Colors.grey[200],
+            width: 1,
+          ),
+          borderRadius: BorderRadius.all(
+            Radius.circular(10),
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              value,
+              style: TextStyle(
+                color: Colors.grey[800],
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(
+              height: 4,
+            ),
+            Text(
+              feature,
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildPetInfo() {

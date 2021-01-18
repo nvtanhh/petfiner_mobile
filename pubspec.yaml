@@ -37,13 +37,19 @@ dependencies:
   path_provider: ^1.6.24
   image: ^2.1.19
   flutter_easyloading: ^2.2.2
-  intl: ^0.16.1
+  # intl: ^0.16.1
   location: ^2.3.5
   shared_preferences: ^0.5.12+4
   flutter_keyboard_visibility: ^4.0.2
   cached_network_image: ^2.5.0
   flutter_html: ^1.2.0
   flutter_cache_manager: ^2.1.1
+  dio: ^3.0.10
+  firebase_messaging: ^7.0.3
+  flutter_local_notifications: ^3.0.2
+  share: ^0.6.5+4
+  screenshot: ^0.2.0
+
 
 dev_dependencies:
   flutter_test:

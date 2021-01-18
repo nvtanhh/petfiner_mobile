@@ -38,6 +38,13 @@ class MyDrawer extends StatelessWidget {
           },
         ),
         ListTile(
+          leading: Icon(Icons.support),
+          title: Text('Feedback and support'),
+          onTap: () {
+            _showFeedbackDialog(context);
+          },
+        ),
+        ListTile(
           leading: Icon(Icons.logout),
           title: Text('Logout'),
           onTap: () {
@@ -50,6 +57,66 @@ class MyDrawer extends StatelessWidget {
 
   void _closeEndDrawer(BuildContext context) {
     Navigator.of(context).pop();
+  }
+
+  _showFeedbackDialog(BuildContext context) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return new AlertDialog(
+          title: Text("We'd love to hear from you."),
+          content: TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              isDense: true,
+              fillColor: Colors.white,
+              filled: true,
+              // isDense: true,
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.blue, width: 1.5),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.grey[400], width: 1.5),
+              ),
+              labelText: 'Feedback',
+              labelStyle: TextStyle(fontSize: 14, color: Colors.grey),
+              // enabled: false
+            ),
+            style: TextStyle(fontSize: 14, color: Colors.black87),
+            maxLines: 5,
+          ),
+          actions: <Widget>[
+            ButtonTheme(
+              //minWidth: double.infinity,
+              child: RaisedButton(
+                elevation: 3.0,
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('Cancel'),
+                color: Colors.grey[400],
+                textColor: const Color(0xffffffff),
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.only(right: 16),
+              child: ButtonTheme(
+                child: RaisedButton(
+                  elevation: 3.0,
+                  onPressed: () async {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Delete'),
+                  color: Theme.of(context).primaryColor,
+                  textColor: const Color(0xffffffff),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   _showLogoutDialog(BuildContext context) {

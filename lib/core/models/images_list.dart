@@ -9,4 +9,11 @@ class ImagesList {
 
     return new ImagesList(images: images);
   }
+  static List<dynamic> toJsonPost(List<String> imageUrls) {
+    return imageUrls.map((url) => {'Url': '/Images/files/' + url}).toList();
+  }
+
+  static List<dynamic> toJsonAvatar(List<String> imageUrls) {
+    return imageUrls.map((url) => {'Url': url}).toList();
+  }
 }

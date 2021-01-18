@@ -1,8 +1,7 @@
 import 'package:pet_finder/core/models/pet.dart';
-import 'package:flutter/material.dart';
 import 'package:pet_finder/core/models/images_list.dart';
-
 import 'Address.dart';
+import 'package:intl/intl.dart' as intl;
 
 enum PostCategory { Adoption, Disappear, Mating }
 
@@ -12,18 +11,20 @@ class Post {
   Pet pet;
   PostCategory postCategory;
   List<String> imageUrls;
-  bool isFavorite;
+  bool isLiked;
   double distance;
 
-  Post({
-    this.id,
-    @required this.pet,
-    @required this.imageUrls,
-    @required this.postCategory,
-    @required this.content,
-    @required this.isFavorite,
-    this.distance = 0.0,
-  });
+  DateTime createdAt;
+
+  Post(
+      {this.id,
+      this.pet,
+      this.imageUrls,
+      this.postCategory,
+      this.content,
+      this.isLiked,
+      this.distance = 0.0,
+      this.createdAt});
 
   String conditionText() {
     switch (this.postCategory) {
@@ -46,10 +47,8 @@ class Post {
         content = json['Content'],
         postCategory = getPostCategory(json['Category']['Id'] as int),
         imageUrls = ImagesList.fromJson(json['Images']).images,
-        isFavorite = json['IsFavorite'],
+        isLiked = json['IsLiked'],
         distance = json['DistanceFromUser'].toDouble();
-
-  toJson() {}
 
   static PostCategory getPostCategory(int id) {
     switch (id) {
@@ -64,6 +63,33 @@ class Post {
         break;
       default:
         return PostCategory.Adoption;
+    }
+  }
+
+  Map<String, dynamic> toUploadJson() {
+    return {
+      'Id': id?.toString(),
+      'Pet': pet.toJson(),
+      'Content': content,
+      'Category': categoryToJson(),
+      'Images': ImagesList.toJsonPost(imageUrls),
+      'CreatedAt': createdAt?.toIso8601String()
+    };
+  }
+
+  Map<String, dynamic> categoryToJson() {
+    switch (postCategory) {
+      case PostCategory.Adoption:
+        return {"Id": 1};
+        break;
+      case PostCategory.Mating:
+        return {"Id": 2};
+        break;
+      case PostCategory.Disappear:
+        return {"Id": 3};
+        break;
+      default:
+        return null;
     }
   }
 }

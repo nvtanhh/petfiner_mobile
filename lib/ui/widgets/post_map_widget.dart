@@ -59,7 +59,7 @@ class PostMapWidget extends StatelessWidget {
                                   post.imageUrls.length == 0)
                               ? AssetImage('assets/images/sample/animal.png')
                               : CachedNetworkImageProvider(
-                                  Apis.baseUrlOnline + post.imageUrls[0],
+                                  Apis.baseURL + post.imageUrls[0],
                                 ),
                           fit: BoxFit.cover,
                         ),
@@ -81,16 +81,14 @@ class PostMapWidget extends StatelessWidget {
                           width: 20,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: post.isFavorite
-                                ? Colors.red[400]
-                                : Colors.white,
+                            color:
+                                post.isLiked ? Colors.red[400] : Colors.white,
                           ),
                           child: Icon(
                             Icons.favorite,
                             size: 16,
-                            color: post.isFavorite
-                                ? Colors.white
-                                : Colors.grey[300],
+                            color:
+                                post.isLiked ? Colors.white : Colors.grey[300],
                           ),
                         ),
                       ),
