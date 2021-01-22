@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:pet_finder/core/apis.dart';
 import 'package:pet_finder/core/services/my_location.dart';
 import 'package:pet_finder/core/models/posts_list.dart';
+import 'package:pet_finder/modules/inbox/inbox_list.dart';
 import 'package:pet_finder/ui/widgets/post_widget.dart';
 
 import 'package:pet_finder/core/models/post.dart';
@@ -143,9 +144,15 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Image.asset('assets/images/text_art.png',
                 height: 30, fit: BoxFit.fitHeight),
           ),
-          Icon(
-            Icons.message_outlined,
-            color: Colors.grey[800],
+          GestureDetector(
+            onTap: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => InboxList()));
+            },
+            child: Icon(
+              Icons.message_outlined,
+              color: Colors.grey[800],
+            ),
           )
         ],
       ),

@@ -12,6 +12,7 @@ import 'package:pet_finder/core/models/post.dart';
 import 'package:pet_finder/core/models/posts_list.dart';
 import 'package:pet_finder/core/services/my_location.dart';
 import 'package:pet_finder/core/models/user.dart';
+import 'package:pet_finder/modules/inbox/inbox_bloc.dart';
 import 'package:pet_finder/ui/edit_profile.dart';
 import 'package:pet_finder/ui/pets_manager.dart';
 import 'package:pet_finder/ui/widgets/drawer.dart';
@@ -307,7 +308,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         setState(() {
           user = User.fromJson(parsedJson);
         });
-        setStringValue('loggedUserId', user.id.toString());
+        await setStringValue('loggedUserId', user.id.toString());
+        await initChatUser();
       } else if (response.statusCode == 500) {
         showError('Server error, please try again latter.');
       }
@@ -317,6 +319,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       showError(e.toString());
       print(e.toString());
     }
+  }
+
+  initChatUser() async {
+    await InboxBloc.instance.createUser(
+        user.id.toString(), user.name, Apis.avatarDirUrl + user.avatar);
+    print('initChatUser completed');
   }
 
   void _loadMyPets() async {

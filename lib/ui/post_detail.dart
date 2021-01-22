@@ -1,12 +1,17 @@
 import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:pet_finder/core/apis.dart';
 import 'package:pet_finder/core/models/pet.dart';
 import 'package:pet_finder/core/models/post.dart';
+import 'package:pet_finder/core/models/user.dart';
+import 'package:pet_finder/modules/inbox/inbox_bloc.dart';
+import 'package:pet_finder/modules/inbox/inbox_chat.dart';
+import 'package:pet_finder/modules/inbox/inbox_model.dart';
 import 'package:pet_finder/ui/create_post.dart';
 import 'package:pet_finder/ui/profile_screen.dart';
 import 'package:pet_finder/ui/pet_detail.dart';
@@ -424,29 +429,90 @@ class _PostDetailState extends State<PostDetail> {
                             ),
                           ),
                         ),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                              vertical: 12, horizontal: 20),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(20),
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.blue[300].withOpacity(0.5),
-                                spreadRadius: 3,
-                                blurRadius: 5,
-                                offset: Offset(0, 0),
+                        GestureDetector(
+                          onTap: () async {
+                            String image = Apis.avatarDirUrl.toString() +
+                                post.pet.avatar.toString();
+                            String loggedUserId =
+                                await getStringValue('loggedUserId');
+                            print('loggedUserId: ' + loggedUserId);
+                            User user = await _loadLoggedUser();
+                            InboxBloc _bloc = InboxBloc.instance;
+
+                            String groupId = await _bloc.createGroup(
+                                loggedUserId,
+                                DateTime.now(),
+                                '',
+                                image,
+                                [loggedUserId, post.pet.owner.id.toString()]);
+
+                            FirebaseFirestore firestore =
+                                FirebaseFirestore.instance;
+
+                            final userRef = await firestore
+                                .collection('user')
+                                .doc(user.id.toString())
+                                .get();
+                            List<String> groups =
+                                userRef.data()['groups'] != null
+                                    ? userRef.data()['groups'].cast<String>()
+                                    : [];
+                            groups.add(groupId);
+                            await firestore
+                                .collection('user')
+                                .doc(user.id.toString())
+                                .update({'groups': groups});
+
+//############################
+                            final user2Ref = await firestore
+                                .collection('user')
+                                .doc(post.pet.owner.id.toString())
+                                .get();
+                            List<String> groups2 =
+                                user2Ref.data()['groups'] != null
+                                    ? user2Ref.data()['groups'].cast<String>()
+                                    : [];
+                            groups2.add(groupId);
+                            await firestore
+                                .collection('user')
+                                .doc(post.pet.owner.id.toString())
+                                .update({'groups': groups});
+
+                            final groupRef =
+                                await _bloc.getGroup(groupId).get();
+                            final group = FbInboxGroupModel.fromJson(
+                                groupRef.data(), groupRef.id);
+
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) =>
+                                        InboxChat(group, 'Test', user: user)));
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 20),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(20),
                               ),
-                            ],
-                            color: Colors.blue[300],
-                          ),
-                          child: Text(
-                            "Contact Me",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.blue[300].withOpacity(0.5),
+                                  spreadRadius: 3,
+                                  blurRadius: 5,
+                                  offset: Offset(0, 0),
+                                ),
+                              ],
+                              color: Colors.blue[300],
+                            ),
+                            child: Text(
+                              "Contact Me",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
@@ -460,6 +526,24 @@ class _PostDetailState extends State<PostDetail> {
         ),
       ),
     );
+  }
+
+  Future<User> _loadLoggedUser() async {
+    String token = await getStringValue('token');
+    http.Response response = await http.get(
+      Apis.getUserInfo,
+      headers: {
+        HttpHeaders.contentTypeHeader: 'application/json',
+        HttpHeaders.authorizationHeader: 'Bearer $token',
+      },
+    ).timeout(Duration(seconds: 30));
+    print('_loadLoggedUser: ' + response.statusCode.toString());
+    if (response.statusCode == 200) {
+      var parsedJson = jsonDecode(response.body);
+      return User.fromJson(parsedJson);
+    } else if (response.statusCode == 500) {
+      showError('Server error, please try again latter.');
+    }
   }
 
   buildPetFeature(String value, String feature) {

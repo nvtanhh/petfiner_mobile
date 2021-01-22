@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -44,7 +42,8 @@ class AppPushs extends StatefulWidget {
 class AppPushsState extends State<AppPushs> {
   static FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  // final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
   static String appToken;
 
   @override
@@ -87,36 +86,59 @@ class AppPushsState extends State<AppPushs> {
     });
   }
 
-  _initFirebaseMessaging() {
-    _firebaseMessaging.configure(
-        onBackgroundMessage: Platform.isIOS ? null : myBackgroundMessageHandler,
-        onMessage: (Map<String, dynamic> message) async {
-          print('onMessage: $message');
-          final notification = message['notification'];
-          _showNotification(notification['title'], notification['body']);
-          return;
-        },
-        onLaunch: (Map<String, dynamic> message) async {
-          print('onLaunch: $message');
-        },
-        onResume: (Map<String, dynamic> message) async {
-          print('onResume: $message');
-        });
-    _firebaseMessaging.getToken().then((value) async {
+  _initFirebaseMessaging() async {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('Got a message whilst in the foreground!');
+      print('Message data: ${message.data}');
+
+      if (message.notification != null) {
+        // print('Message also contained a notification: ${message.notification}');
+        _showNotification(
+            message.notification.title, message.notification.body);
+      }
+    });
+
+    FirebaseMessaging.onBackgroundMessage(myBackgroundMessageHandler);
+
+    messaging.getToken().then((value) async {
       print("FirebaseMessaging token: $value");
       appToken = value;
       await setStringValue('firebase_messaging_token', value);
     });
-    _firebaseMessaging.requestNotificationPermissions(
-        const IosNotificationSettings(sound: true, badge: true, alert: true));
+
+    // _firebaseMessaging.configure(
+    //     onBackgroundMessage: Platform.isIOS ? null : myBackgroundMessageHandler,
+    //     onMessage: (Map<String, dynamic> message) async {
+    //       print('onMessage: $message');
+    //       final notification = message['notification'];
+    //       _showNotification(notification['title'], notification['body']);
+    //       return;
+    //     },
+    //     onLaunch: (Map<String, dynamic> message) async {
+    //       print('onLaunch: $message');
+    //     },
+    //     onResume: (Map<String, dynamic> message) async {
+    //       print('onResume: $message');
+    //     });
+    await messaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
   }
 
   // TOP-LEVEL or STATIC function to handle background messages
-  static Future<dynamic> myBackgroundMessageHandler(
-      Map<String, dynamic> message) {
-    print('AppPushs myBackgroundMessageHandler : $message');
-    _showNotification(
-        message['notification']['title'], message['notification']['body']);
+  static Future<void> myBackgroundMessageHandler(RemoteMessage message) {
+    print('Got a message whilst in the foreground!');
+    print('Message data: ${message.data}');
+
+    if (message.notification != null) {
+      _showNotification(message.notification.title, message.notification.body);
+    }
     return Future<void>.value();
   }
 
